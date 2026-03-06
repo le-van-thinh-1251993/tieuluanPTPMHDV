@@ -502,6 +502,128 @@
             color: var(--danger);
         }
 
+        /* ====== VIEW TOGGLE TABS ====== */
+        .view-toggle {
+            display: flex;
+            gap: 4px;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 4px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            display: inline-flex;
+        }
+
+        .view-tab {
+            padding: 10px 20px;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.85em;
+            font-weight: 500;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .view-tab:hover {
+            color: var(--text);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .view-tab.active {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+        }
+
+        /* ====== INVOICE CARDS ====== */
+        .booked-rooms-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+
+        .invoice-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .invoice-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(99, 102, 241, 0.15);
+            border-color: var(--primary);
+        }
+
+        .invoice-header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .invoice-header h4 {
+            font-size: 1em;
+            color: white;
+        }
+
+        .invoice-badge {
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.75em;
+            font-weight: 600;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .invoice-body {
+            padding: 20px;
+        }
+
+        .invoice-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(51, 65, 85, 0.4);
+            font-size: 0.9em;
+        }
+
+        .invoice-row:last-child {
+            border-bottom: none;
+        }
+
+        .invoice-label {
+            color: var(--text-muted);
+        }
+
+        .invoice-value {
+            font-weight: 500;
+            text-align: right;
+        }
+
+        .invoice-total {
+            display: flex;
+            justify-content: space-between;
+            padding: 14px 20px;
+            background: rgba(0, 0, 0, 0.2);
+            border-top: 1px solid var(--border);
+        }
+
+        .invoice-total .label {
+            font-weight: 600;
+            font-size: 0.95em;
+        }
+
+        .invoice-total .amount {
+            font-weight: 800;
+            font-size: 1.15em;
+            color: var(--accent);
+        }
+
         /* ====== MODAL ====== */
         .modal-overlay {
             display: none;
@@ -818,12 +940,31 @@
 
         <!-- ===== PAGE: BOOKINGS LIST ===== -->
         <div id="page-bookings" class="page">
-            <h2 class="section-title">Danh sách đặt phòng</h2>
-            <p class="section-subtitle">Tất cả các booking trong hệ thống</p>
+            <h2 class="section-title">Quản lý Booking</h2>
+            <p class="section-subtitle">Xem danh sách đặt phòng và hóa đơn chi tiết</p>
 
-            <div class="bookings-table-wrap" id="bookings-table-wrap">
-                <div class="loading">
-                    <div class="spinner"></div>Đang tải dữ liệu...
+            <!-- Toggle Tabs -->
+            <div class="view-toggle">
+                <button class="view-tab active" onclick="switchBookingView('list', this)">📋 Danh sách Booking</button>
+                <button class="view-tab" onclick="switchBookingView('invoices', this)">🧾 Phòng đã đặt & Hóa
+                    đơn</button>
+            </div>
+
+            <!-- View 1: Table -->
+            <div id="view-list">
+                <div class="bookings-table-wrap" id="bookings-table-wrap">
+                    <div class="loading">
+                        <div class="spinner"></div>Đang tải dữ liệu...
+                    </div>
+                </div>
+            </div>
+
+            <!-- View 2: Invoice Cards -->
+            <div id="view-invoices" style="display:none;">
+                <div class="booked-rooms-grid" id="booked-rooms-grid">
+                    <div class="loading">
+                        <div class="spinner"></div>Đang tải dữ liệu...
+                    </div>
                 </div>
             </div>
         </div>
@@ -835,8 +976,7 @@
         <div class="modal">
             <div class="modal-icon" id="modal-icon">✅</div>
             <h3 id="modal-title">Thành công!</h3>
-            <p id="modal-message"></p>
-            <p id="modal-detail" class="detail"></p>
+            <div id="modal-body"></div>
             <button class="modal-close" onclick="closeModal()">Đóng</button>
         </div>
     </div>
@@ -1007,19 +1147,39 @@
                 const data = await res.json();
 
                 if (res.ok) {
-                    showModal('success', 'Đặt phòng thành công! 🎉',
-                        `Mã booking: ${data.bookingId}`,
-                        data.message);
+                    // Tìm thông tin phòng đã đặt
+                    const bookedRoom = allRooms.find(r => r.id === body.roomId);
+                    const roomType = bookedRoom ? bookedRoom.type : body.roomId;
+
+                    showModal('success', 'Đặt phòng thành công! 🎉', `
+                        <div style="text-align:left; background:rgba(0,0,0,0.2); border-radius:12px; padding:16px; margin:12px 0;">
+                            <p style="margin-bottom:8px;"><strong>📋 Mã booking:</strong> <span style="color:#818cf8">${data.bookingId}</span></p>
+                            <p style="margin-bottom:8px;"><strong>👤 Khách hàng:</strong> ${body.customerName}</p>
+                            <p style="margin-bottom:8px;"><strong>📧 Email:</strong> ${body.email}</p>
+                            <p style="margin-bottom:8px;"><strong>🏠 Phòng:</strong> ${body.roomId} - ${roomType}</p>
+                            <p style="margin-bottom:8px;"><strong>📅 Check-in:</strong> ${body.checkInDate}</p>
+                            <hr style="border-color:rgba(255,255,255,0.1); margin:10px 0;">
+                            <p style="margin-bottom:8px;"><strong>💳 Thanh toán:</strong> <span style="color:#10b981;">✅ Thành công</span></p>
+                            <p style="margin-bottom:8px;"><strong>🔢 Số thẻ:</strong> ****${body.paymentInfo.cardNumber.slice(-4)}</p>
+                            <p><strong>💰 Số tiền:</strong> <span style="color:#f59e0b; font-size:1.1em;">${formatPrice(body.paymentInfo.amount)} VND</span></p>
+                        </div>
+                    `);
                     document.getElementById('booking-form').reset();
+
+                    // Refresh danh sách phòng để cập nhật trạng thái
+                    await loadRooms();
+                    // Refresh dropdown phòng
+                    await loadRoomOptions();
                 } else {
-                    showModal('error', 'Đặt phòng thất bại ❌',
-                        data.message || 'Có lỗi xảy ra',
-                        '');
+                    showModal('error', 'Đặt phòng thất bại ❌', `
+                        <p style="color:var(--danger); margin:12px 0;">${data.message || 'Có lỗi xảy ra'}</p>
+                    `);
                 }
             } catch (e) {
-                showModal('error', 'Lỗi kết nối ❌',
-                    'Không thể kết nối tới server',
-                    'Hãy kiểm tra GlassFish đang chạy.');
+                showModal('error', 'Lỗi kết nối ❌', `
+                    <p style="margin:12px 0;">Không thể kết nối tới server</p>
+                    <p style="color:var(--text-muted);">Hãy kiểm tra GlassFish đang chạy.</p>
+                `);
             }
 
             btn.disabled = false;
@@ -1027,11 +1187,18 @@
         }
 
         // ====== BOOKINGS LIST ======
+        let allBookings = [];
+
         async function loadBookings() {
             try {
-                const res = await fetch(API_BASE + '/bookings');
-                const bookings = await res.json();
-                renderBookings(bookings);
+                const [bookingsRes, roomsRes] = await Promise.all([
+                    fetch(API_BASE + '/bookings'),
+                    fetch(API_BASE + '/rooms')
+                ]);
+                allBookings = await bookingsRes.json();
+                const rooms = await roomsRes.json();
+                renderBookings(allBookings);
+                renderBookedRoomCards(allBookings, rooms);
             } catch (e) {
                 document.getElementById('bookings-table-wrap').innerHTML =
                     '<p style="padding:20px;color:var(--danger)">❌ Không thể tải dữ liệu booking.</p>';
@@ -1074,13 +1241,74 @@
             `;
         }
 
+        // ====== BOOKED ROOMS + INVOICES ======
+        function renderBookedRoomCards(bookings, rooms) {
+            const grid = document.getElementById('booked-rooms-grid');
+            if (bookings.length === 0) {
+                grid.innerHTML = '<p style="color:var(--text-muted)">Chưa có phòng nào được đặt.</p>';
+                return;
+            }
+
+            grid.innerHTML = bookings.map(b => {
+                const room = rooms.find(r => r.id === b.roomId) || {};
+                const roomType = room.type || 'N/A';
+                const badgeClass = room.type ? 'badge-' + room.type.toLowerCase() : '';
+
+                return `
+                    <div class="invoice-card">
+                        <div class="invoice-header">
+                            <h4>🧾 ${b.id}</h4>
+                            <span class="invoice-badge">${b.status === 'confirmed' ? '✅ Confirmed' : b.status}</span>
+                        </div>
+                        <div class="invoice-body">
+                            <div class="invoice-row">
+                                <span class="invoice-label">🏠 Phòng</span>
+                                <span class="invoice-value">${b.roomId} - <span class="room-type-badge ${badgeClass}" style="font-size:0.85em;">${roomType}</span></span>
+                            </div>
+                            <div class="invoice-row">
+                                <span class="invoice-label">👤 Khách hàng</span>
+                                <span class="invoice-value">${b.customerName}</span>
+                            </div>
+                            <div class="invoice-row">
+                                <span class="invoice-label">📧 Email</span>
+                                <span class="invoice-value">${b.email}</span>
+                            </div>
+                            <div class="invoice-row">
+                                <span class="invoice-label">📅 Check-in</span>
+                                <span class="invoice-value">${b.checkInDate}</span>
+                            </div>
+                            <div class="invoice-row">
+                                <span class="invoice-label">💳 Thanh toán</span>
+                                <span class="invoice-value" style="color:var(--success);">✅ Đã thanh toán</span>
+                            </div>
+                            ${room.price ? `<div class="invoice-row">
+                                <span class="invoice-label">💲 Giá phòng/đêm</span>
+                                <span class="invoice-value">${formatPrice(room.price)} VND</span>
+                            </div>` : ''}
+                        </div>
+                        <div class="invoice-total">
+                            <span class="label">💰 Tổng hóa đơn</span>
+                            <span class="amount">${formatPrice(b.amount)} VND</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // ====== TOGGLE VIEWS ======
+        function switchBookingView(view, btn) {
+            document.querySelectorAll('.view-tab').forEach(t => t.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById('view-list').style.display = view === 'list' ? 'block' : 'none';
+            document.getElementById('view-invoices').style.display = view === 'invoices' ? 'block' : 'none';
+        }
+
         // ====== MODAL ======
-        function showModal(type, title, message, detail) {
+        function showModal(type, title, bodyHTML) {
             document.getElementById('modal-icon').className = 'modal-icon ' + type;
             document.getElementById('modal-icon').textContent = type === 'success' ? '✅' : '❌';
             document.getElementById('modal-title').textContent = title;
-            document.getElementById('modal-message').textContent = message;
-            document.getElementById('modal-detail').textContent = detail;
+            document.getElementById('modal-body').innerHTML = bodyHTML;
             document.getElementById('modal').classList.add('active');
         }
 
