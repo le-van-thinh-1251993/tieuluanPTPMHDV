@@ -7,6 +7,8 @@ public class Booking {
     private String email;
     private String roomId;
     private String checkInDate;
+    private String checkOutDate;
+    private int nights;
     private double amount;
     private String status;
 
@@ -14,12 +16,14 @@ public class Booking {
     }
 
     public Booking(String id, String customerName, String email, String roomId,
-            String checkInDate, double amount, String status) {
+            String checkInDate, String checkOutDate, int nights, double amount, String status) {
         this.id = id;
         this.customerName = customerName;
         this.email = email;
         this.roomId = roomId;
         this.checkInDate = checkInDate;
+        this.checkOutDate = checkOutDate;
+        this.nights = nights;
         this.amount = amount;
         this.status = status;
     }
@@ -62,6 +66,22 @@ public class Booking {
 
     public void setCheckInDate(String checkInDate) {
         this.checkInDate = checkInDate;
+    }
+
+    public String getCheckOutDate() {
+        return checkOutDate;
+    }
+
+    public void setCheckOutDate(String checkOutDate) {
+        this.checkOutDate = checkOutDate;
+    }
+
+    public int getNights() {
+        return nights;
+    }
+
+    public void setNights(int nights) {
+        this.nights = nights;
     }
 
     public double getAmount() {

@@ -7,7 +7,9 @@
         <email>thinh.b24dtcn494@gmail.com</email>
         <roomId>R01</roomId>
         <checkInDate>2026-03-10</checkInDate>
-        <amount>1200000</amount>
+        <checkOutDate>2026-03-12</checkOutDate>
+        <nights>2</nights>
+        <amount>2400000</amount>
         <status>confirmed</status>
     </booking>
 
@@ -17,7 +19,9 @@
         <email>vinh.k23dtcn471@gmail.com</email>
         <roomId>R02</roomId>
         <checkInDate>2026-03-11</checkInDate>
-        <amount>800000</amount>
+        <checkOutDate>2026-03-14</checkOutDate>
+        <nights>3</nights>
+        <amount>2400000</amount>
         <status>confirmed</status>
     </booking>
 
@@ -27,6 +31,8 @@
         <email>ngocanh.k24dtcn110@gmail.com</email>
         <roomId>R03</roomId>
         <checkInDate>2026-03-12</checkInDate>
+        <checkOutDate>2026-03-13</checkOutDate>
+        <nights>1</nights>
         <amount>2500000</amount>
         <status>confirmed</status>
     </booking>
@@ -37,7 +43,9 @@
         <email>hoan.k23dtcn452@gmail.com</email>
         <roomId>R04</roomId>
         <checkInDate>2026-03-13</checkInDate>
-        <amount>3000000</amount>
+        <checkOutDate>2026-03-15</checkOutDate>
+        <nights>2</nights>
+        <amount>6000000</amount>
         <status>confirmed</status>
     </booking>
 
@@ -47,7 +55,9 @@
         <email>tuyet.k23dtcn468@gmail.com</email>
         <roomId>R05</roomId>
         <checkInDate>2026-03-14</checkInDate>
-        <amount>1500000</amount>
+        <checkOutDate>2026-03-16</checkOutDate>
+        <nights>2</nights>
+        <amount>3000000</amount>
         <status>confirmed</status>
     </booking>
 

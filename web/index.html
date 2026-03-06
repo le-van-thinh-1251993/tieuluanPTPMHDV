@@ -978,8 +978,19 @@
                                 </select>
                             </div>
                             <div class="form-group">
+                                <label>Số đêm</label>
+                                <input type="number" id="nights" min="1" max="30" value="1" required
+                                    onchange="calcCheckout()">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
                                 <label>Ngày check-in</label>
-                                <input type="date" id="checkInDate" required>
+                                <input type="date" id="checkInDate" required onchange="calcCheckout()">
+                            </div>
+                            <div class="form-group">
+                                <label>Ngày check-out (tự tính)</label>
+                                <input type="date" id="checkOutDate" readonly>
                             </div>
                         </div>
                         <div class="form-row">
@@ -988,7 +999,7 @@
                                 <input type="text" id="cardNumber" placeholder="12345678" required>
                             </div>
                             <div class="form-group">
-                                <label>Số tiền (VND)</label>
+                                <label>Tổng tiền (VND)</label>
                                 <input type="number" id="amount" readonly>
                             </div>
                         </div>
@@ -1163,15 +1174,20 @@
         }
 
         function applyFilters() {
-            // Filter by type
             let filtered = currentTypeFilter === 'all' ? allRooms : allRooms.filter(r => r.type === currentTypeFilter);
 
-            // Find rooms booked on the selected date
+            // Find rooms booked on the selected date (range overlap check)
             let bookedRoomIds = [];
             if (currentDateFilter) {
-                bookedRoomIds = allBookingsForFilter
-                    .filter(b => b.checkInDate === currentDateFilter && b.status === 'confirmed')
-                    .map(b => b.roomId);
+                allBookingsForFilter.forEach(b => {
+                    if (b.status !== 'confirmed') return;
+                    const bIn = b.checkInDate;
+                    const bOut = b.checkOutDate || b.checkInDate;
+                    // Date falls within [checkIn, checkOut)
+                    if (currentDateFilter >= bIn && currentDateFilter < bOut) {
+                        bookedRoomIds.push(b.roomId);
+                    }
+                });
             }
 
             renderRooms(filtered, bookedRoomIds);
@@ -1198,9 +1214,9 @@
                 const select = document.getElementById('roomId');
                 const currentVal = select.value;
                 select.innerHTML = '<option value="">-- Chọn phòng --</option>';
-                rooms.filter(r => r.status === 'available').forEach(room => {
+                rooms.forEach(room => {
                     select.innerHTML += `<option value="${room.id}" data-price="${room.price}">
-                        ${room.id} - ${room.type} (${formatPrice(room.price)} VND)
+                        ${room.id} - ${room.type} (${formatPrice(room.price)} VND/đêm)
                     </option>`;
                 });
                 if (currentVal) select.value = currentVal;
@@ -1213,11 +1229,24 @@
         function updatePrice() {
             const select = document.getElementById('roomId');
             const option = select.options[select.selectedIndex];
-            const price = option ? option.getAttribute('data-price') : '';
-            document.getElementById('amount').value = price || '';
+            const pricePerNight = option ? parseFloat(option.getAttribute('data-price')) : 0;
+            const nights = parseInt(document.getElementById('nights').value) || 1;
+            document.getElementById('amount').value = pricePerNight ? pricePerNight * nights : '';
+        }
+
+        function calcCheckout() {
+            const checkIn = document.getElementById('checkInDate').value;
+            const nights = parseInt(document.getElementById('nights').value) || 1;
+            if (checkIn) {
+                const d = new Date(checkIn);
+                d.setDate(d.getDate() + nights);
+                document.getElementById('checkOutDate').value = d.toISOString().split('T')[0];
+            }
+            updatePrice();
         }
 
         document.getElementById('roomId').addEventListener('change', updatePrice);
+        document.getElementById('nights').addEventListener('input', calcCheckout);
 
         async function submitBooking(e) {
             e.preventDefault();
@@ -1225,11 +1254,14 @@
             btn.disabled = true;
             btn.textContent = '⏳ Đang xử lý...';
 
+            const nights = parseInt(document.getElementById('nights').value) || 1;
             const body = {
                 customerName: document.getElementById('customerName').value,
                 email: document.getElementById('email').value,
                 roomId: document.getElementById('roomId').value,
                 checkInDate: document.getElementById('checkInDate').value,
+                checkOutDate: document.getElementById('checkOutDate').value,
+                nights: nights,
                 paymentInfo: {
                     cardNumber: document.getElementById('cardNumber').value,
                     amount: parseFloat(document.getElementById('amount').value)
@@ -1256,6 +1288,7 @@
                             <p style="margin-bottom:8px;"><strong>📧 Email:</strong> ${body.email}</p>
                             <p style="margin-bottom:8px;"><strong>🏠 Phòng:</strong> ${body.roomId} - ${roomType}</p>
                             <p style="margin-bottom:8px;"><strong>📅 Check-in:</strong> ${body.checkInDate}</p>
+                            <p style="margin-bottom:8px;"><strong>📅 Check-out:</strong> ${body.checkOutDate} (${body.nights} đêm)</p>
                             <hr style="border-color:rgba(255,255,255,0.1); margin:10px 0;">
                             <p style="margin-bottom:8px;"><strong>💳 Thanh toán:</strong> <span style="color:#10b981;">✅ Thành công</span></p>
                             <p style="margin-bottom:8px;"><strong>🔢 Số thẻ:</strong> ****${body.paymentInfo.cardNumber.slice(-4)}</p>

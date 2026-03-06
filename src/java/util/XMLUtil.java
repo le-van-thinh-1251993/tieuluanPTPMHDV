@@ -127,6 +127,9 @@ public class XMLUtil {
                             getTagValue("email", element),
                             getTagValue("roomId", element),
                             getTagValue("checkInDate", element),
+                            getTagValue("checkOutDate", element) != null ? getTagValue("checkOutDate", element) : "",
+                            getTagValue("nights", element) != null ? Integer.parseInt(getTagValue("nights", element))
+                                    : 1,
                             Double.parseDouble(getTagValue("amount", element)),
                             getTagValue("status", element));
                     bookings.add(booking);
@@ -163,6 +166,9 @@ public class XMLUtil {
                 bookingElement.appendChild(createElement(doc, "email", b.getEmail()));
                 bookingElement.appendChild(createElement(doc, "roomId", b.getRoomId()));
                 bookingElement.appendChild(createElement(doc, "checkInDate", b.getCheckInDate()));
+                bookingElement.appendChild(
+                        createElement(doc, "checkOutDate", b.getCheckOutDate() != null ? b.getCheckOutDate() : ""));
+                bookingElement.appendChild(createElement(doc, "nights", String.valueOf(b.getNights())));
                 bookingElement.appendChild(createElement(doc, "amount", String.valueOf((long) b.getAmount())));
                 bookingElement.appendChild(createElement(doc, "status", b.getStatus()));
 

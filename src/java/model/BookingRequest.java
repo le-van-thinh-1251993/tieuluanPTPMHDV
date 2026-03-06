@@ -10,6 +10,8 @@ public class BookingRequest {
     private String email;
     private String roomId;
     private String checkInDate;
+    private String checkOutDate;
+    private int nights;
     private PaymentInfo paymentInfo;
 
     public BookingRequest() {
@@ -45,6 +47,22 @@ public class BookingRequest {
 
     public void setCheckInDate(String checkInDate) {
         this.checkInDate = checkInDate;
+    }
+
+    public String getCheckOutDate() {
+        return checkOutDate;
+    }
+
+    public void setCheckOutDate(String checkOutDate) {
+        this.checkOutDate = checkOutDate;
+    }
+
+    public int getNights() {
+        return nights;
+    }
+
+    public void setNights(int nights) {
+        this.nights = nights;
     }
 
     public PaymentInfo getPaymentInfo() {

@@ -25,13 +25,32 @@ public class BookingService {
     public static BookingResponse createBooking(BookingRequest request) {
         System.out.println("[BookingService] Bắt đầu xử lý đặt phòng...");
 
-        // Bước 1: Kiểm tra phòng trống
+        // Bước 1: Kiểm tra phòng tồn tại
         Room room = RoomService.getRoomById(request.getRoomId());
         if (room == null) {
             return new BookingResponse(null, "failed", "Không tìm thấy phòng " + request.getRoomId());
         }
-        if (!"available".equalsIgnoreCase(room.getStatus())) {
-            return new BookingResponse(null, "failed", "Phòng " + request.getRoomId() + " không còn trống");
+
+        // Bước 1b: Kiểm tra trùng ngày (overlap)
+        List<Booking> existingBookings = XMLUtil.readBookings();
+        String newCheckIn = request.getCheckInDate();
+        String newCheckOut = request.getCheckOutDate();
+        if (newCheckOut == null || newCheckOut.isEmpty()) {
+            newCheckOut = newCheckIn; // fallback: 1 đêm
+        }
+        for (Booking existing : existingBookings) {
+            if (existing.getRoomId().equals(request.getRoomId()) && "confirmed".equals(existing.getStatus())) {
+                String exCheckIn = existing.getCheckInDate();
+                String exCheckOut = existing.getCheckOutDate();
+                if (exCheckOut == null || exCheckOut.isEmpty()) {
+                    exCheckOut = exCheckIn;
+                }
+                // Overlap: newCheckIn < exCheckOut AND newCheckOut > exCheckIn
+                if (newCheckIn.compareTo(exCheckOut) < 0 && newCheckOut.compareTo(exCheckIn) > 0) {
+                    return new BookingResponse(null, "failed",
+                            "Phòng " + request.getRoomId() + " đã được đặt từ " + exCheckIn + " đến " + exCheckOut);
+                }
+            }
         }
 
         System.out.println("[BookingService] Phòng " + room.getId() + " (" + room.getType() + ") - Còn trống ✓");
@@ -58,21 +77,20 @@ public class BookingService {
                 request.getEmail(),
                 request.getRoomId(),
                 request.getCheckInDate(),
+                request.getCheckOutDate() != null ? request.getCheckOutDate() : "",
+                request.getNights() > 0 ? request.getNights() : 1,
                 amount,
                 "confirmed");
         XMLUtil.writeBooking(booking);
         System.out.println("[BookingService] Đã lưu booking " + bookingId + " ✓");
 
-        // Bước 5: Cập nhật trạng thái phòng thành "booked"
-        RoomService.updateRoomStatus(request.getRoomId(), "booked");
-        System.out.println("[BookingService] Đã cập nhật trạng thái phòng " + request.getRoomId() + " → booked ✓");
-
-        // Bước 6: Gửi thông báo xác nhận
+        // Bước 5: Gửi thông báo xác nhận
         Notification notification = new Notification(
                 request.getEmail(),
                 "Đặt phòng thành công! Mã booking: " + bookingId
                         + ", Phòng: " + room.getType()
-                        + ", Ngày check-in: " + request.getCheckInDate()
+                        + ", Check-in: " + request.getCheckInDate()
+                        + ", Check-out: " + (request.getCheckOutDate() != null ? request.getCheckOutDate() : "")
                         + ", Số tiền: " + (long) amount + " VND",
                 "booking_confirmation");
         NotificationService.sendNotification(notification);
