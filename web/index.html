@@ -980,13 +980,13 @@
                             <div class="form-group">
                                 <label>Số đêm</label>
                                 <input type="number" id="nights" min="1" max="30" value="1" required
-                                    onchange="calcCheckout()">
+                                    oninput="calcCheckout()">
                             </div>
                         </div>
                         <div class="form-row">
                             <div class="form-group">
                                 <label>Ngày check-in</label>
-                                <input type="date" id="checkInDate" required onchange="calcCheckout()">
+                                <input type="date" id="checkInDate" required oninput="calcCheckout()">
                             </div>
                             <div class="form-group">
                                 <label>Ngày check-out (tự tính)</label>
@@ -1463,10 +1463,10 @@
         // ====== INIT ======
         document.addEventListener('DOMContentLoaded', () => {
             loadRooms();
-            // Set default check-in date to tomorrow
-            const tomorrow = new Date();
-            tomorrow.setDate(tomorrow.getDate() + 1);
-            document.getElementById('checkInDate').value = tomorrow.toISOString().split('T')[0];
+            // Set default check-in date to today
+            const today = new Date();
+            document.getElementById('checkInDate').value = today.toISOString().split('T')[0];
+            calcCheckout();
         });
     </script>
 </body>
