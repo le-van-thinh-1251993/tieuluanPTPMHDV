@@ -1086,7 +1086,6 @@
                 allRooms = await roomsRes.json();
                 allBookingsForFilter = await bookingsRes.json();
                 applyFilters();
-                renderStats(allRooms);
             } catch (e) {
                 document.getElementById('rooms-grid').innerHTML =
                     '<p style="color:var(--danger)">❌ Không thể kết nối API. Hãy chắc chắn server đang chạy.</p>';
@@ -1126,10 +1125,11 @@
             }).join('');
         }
 
-        function renderStats(rooms) {
+        function renderStats(rooms, bookedRoomIds) {
+            bookedRoomIds = bookedRoomIds || [];
             const total = rooms.length;
-            const available = rooms.filter(r => r.status === 'available').length;
-            const booked = rooms.filter(r => r.status === 'booked').length;
+            const bookedCount = bookedRoomIds.length;
+            const availableCount = total - bookedCount;
             const avgPrice = rooms.length > 0
                 ? Math.round(rooms.reduce((s, r) => s + r.price, 0) / rooms.length)
                 : 0;
@@ -1141,11 +1141,11 @@
                 </div>
                 <div class="stat-card">
                     <p class="stat-label">Còn trống</p>
-                    <p class="stat-value text-success">${available}</p>
+                    <p class="stat-value text-success">${availableCount}</p>
                 </div>
                 <div class="stat-card">
                     <p class="stat-label">Đã đặt</p>
-                    <p class="stat-value text-danger">${booked}</p>
+                    <p class="stat-value text-danger">${bookedCount}</p>
                 </div>
                 <div class="stat-card">
                     <p class="stat-label">Giá trung bình</p>
@@ -1168,8 +1168,9 @@
         }
 
         function clearDateFilter() {
-            document.getElementById('filterDate').value = '';
-            currentDateFilter = '';
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('filterDate').value = today;
+            currentDateFilter = today;
             applyFilters();
         }
 
@@ -1183,14 +1184,14 @@
                     if (b.status !== 'confirmed') return;
                     const bIn = b.checkInDate;
                     const bOut = b.checkOutDate || b.checkInDate;
-                    // Date falls within [checkIn, checkOut)
                     if (currentDateFilter >= bIn && currentDateFilter < bOut) {
-                        bookedRoomIds.push(b.roomId);
+                        if (!bookedRoomIds.includes(b.roomId)) bookedRoomIds.push(b.roomId);
                     }
                 });
             }
 
             renderRooms(filtered, bookedRoomIds);
+            renderStats(allRooms, bookedRoomIds);
         }
 
         // ====== BOOKING FORM ======
@@ -1462,10 +1463,15 @@
 
         // ====== INIT ======
         document.addEventListener('DOMContentLoaded', () => {
+            // Set default filter date to today
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('filterDate').value = today;
+            currentDateFilter = today;
+
             loadRooms();
+
             // Set default check-in date to today
-            const today = new Date();
-            document.getElementById('checkInDate').value = today.toISOString().split('T')[0];
+            document.getElementById('checkInDate').value = today;
             calcCheckout();
         });
     </script>

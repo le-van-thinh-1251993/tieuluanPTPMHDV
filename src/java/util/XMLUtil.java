@@ -121,15 +121,16 @@ public class XMLUtil {
                 if (node.getNodeType() == Node.ELEMENT_NODE) {
                     Element element = (Element) node;
 
+                    String checkOutStr = getTagValue("checkOutDate", element);
+                    String nightsStr = getTagValue("nights", element);
                     Booking booking = new Booking(
                             getTagValue("id", element),
                             getTagValue("customerName", element),
                             getTagValue("email", element),
                             getTagValue("roomId", element),
                             getTagValue("checkInDate", element),
-                            getTagValue("checkOutDate", element) != null ? getTagValue("checkOutDate", element) : "",
-                            getTagValue("nights", element) != null ? Integer.parseInt(getTagValue("nights", element))
-                                    : 1,
+                            checkOutStr != null && !checkOutStr.isEmpty() ? checkOutStr : "",
+                            nightsStr != null && !nightsStr.isEmpty() ? Integer.parseInt(nightsStr) : 1,
                             Double.parseDouble(getTagValue("amount", element)),
                             getTagValue("status", element));
                     bookings.add(booking);
