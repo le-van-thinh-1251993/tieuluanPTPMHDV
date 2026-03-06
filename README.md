@@ -22,9 +22,9 @@
 ## 📖 Giới thiệu
 
 Hệ thống cho phép thực hiện các chức năng cơ bản của một hệ thống đặt phòng khách sạn:
-- Xem danh sách phòng
-- Kiểm tra trạng thái phòng
-- Đặt phòng
+- Xem danh sách phòng, lọc theo loại và theo ngày
+- Đặt phòng với check-in/check-out và số đêm
+- Kiểm tra trùng ngày (chống đặt phòng trùng lịch)
 - Thanh toán
 - Gửi thông báo xác nhận
 
@@ -47,14 +47,15 @@ Hệ thống được thiết kế theo mô hình **Composable Services**, trong
 
 **Quy trình đặt phòng:**
 1. Client gửi yêu cầu đặt phòng → Booking Service
-2. Booking Service kiểm tra phòng trống → Room Service
-3. Booking Service xử lý thanh toán → Payment Service
-4. Booking Service cập nhật trạng thái phòng → Room Service
-5. Booking Service gửi thông báo xác nhận → Notification Service
+2. Booking Service kiểm tra phòng tồn tại → Room Service
+3. Booking Service kiểm tra trùng ngày (overlap check) → XMLUtil (đọc bookings.xml)
+4. Booking Service xử lý thanh toán → Payment Service
+5. Booking Service lưu booking → XMLUtil (ghi bookings.xml)
+6. Booking Service gửi thông báo xác nhận → Notification Service
 
 ---
 
-## � Luồng API
+## 🔄 Luồng API
 
 ### Xem phòng
 ```
@@ -64,11 +65,11 @@ Client → GET /api/rooms → RoomResource → RoomService → XMLUtil (đọc r
 ### Đặt phòng (luồng chính — Service Composition)
 ```
 Client → POST /api/bookings → BookingResource → BookingService điều phối:
-   1️⃣ RoomService.getRoomById()     → Kiểm tra phòng còn trống
-   2️⃣ PaymentService.process()      → Xử lý thanh toán → "success"
-   3️⃣ RoomService.updateStatus()    → Cập nhật phòng → "booked" (ghi rooms.xml)
-   4️⃣ XMLUtil.addBooking()          → Lưu booking vào bookings.xml
-   5️⃣ NotificationService.send()    → Gửi thông báo (in console)
+   1️⃣ RoomService.getRoomById()       → Kiểm tra phòng tồn tại
+   2️⃣ XMLUtil.readBookings()           → Kiểm tra trùng ngày (overlap check)
+   3️⃣ PaymentService.process()         → Xử lý thanh toán → "success"
+   4️⃣ XMLUtil.writeBooking()           → Lưu booking vào bookings.xml
+   5️⃣ NotificationService.send()       → Gửi thông báo (in console)
    → Trả BookingResponse (201 Created)
 ```
 
@@ -81,7 +82,7 @@ Client → GET /api/bookings → BookingResource → XMLUtil (đọc bookings.xm
 
 ---
 
-## �📁 Cấu trúc project
+## 📁 Cấu trúc project
 
 ```
 HotelBookingAPI/
@@ -192,12 +193,11 @@ HotelBookingAPI/
 | 2 | Chi tiết phòng | `GET` | `/api/rooms/R01` | 200 - Thông tin R01 |
 | 3 | Lọc theo loại | `GET` | `/api/rooms/type/Deluxe` | 200 - Phòng Deluxe |
 | **4** | **⭐ Đặt phòng** | **`POST`** | **`/api/bookings`** | **201 - confirmed** |
-| 5 | Phòng sau khi đặt | `GET` | `/api/rooms/R01` | 200 - status: `booked` |
-| 6 | Đặt phòng đã book | `POST` | `/api/bookings` | 400 - Phòng không trống |
-| 7 | Danh sách booking | `GET` | `/api/bookings` | 200 - Danh sách bookings |
-| 8 | Thanh toán | `POST` | `/api/payments` | 200 - status: `success` |
-| 9 | Gửi thông báo | `POST` | `/api/notifications` | 200 - Gửi thành công |
-| 10 | Cập nhật trạng thái | `PUT` | `/api/rooms/R01/status` | 200 - Đã cập nhật |
+| 5 | Đặt trùng ngày | `POST` | `/api/bookings` | 400 - Phòng đã được đặt trong khoảng ngày |
+| 6 | Danh sách booking | `GET` | `/api/bookings` | 200 - Danh sách bookings |
+| 7 | Thanh toán | `POST` | `/api/payments` | 200 - status: `success` |
+| 8 | Gửi thông báo | `POST` | `/api/notifications` | 200 - Gửi thành công |
+| 9 | Cập nhật trạng thái | `PUT` | `/api/rooms/R01/status` | 200 - Đã cập nhật |
 
 ---
 
@@ -213,10 +213,12 @@ HotelBookingAPI/
   "customerName": "Nguyen Van A",
   "email": "vana@gmail.com",
   "roomId": "R01",
-  "checkInDate": "2026-03-10",
+  "checkInDate": "2026-04-01",
+  "checkOutDate": "2026-04-03",
+  "nights": 2,
   "paymentInfo": {
     "cardNumber": "12345678",
-    "amount": 1200000
+    "amount": 2400000
   }
 }
 ```
@@ -230,37 +232,73 @@ HotelBookingAPI/
 }
 ```
 
-> Sau khi đặt, gửi `GET /api/rooms/R01` sẽ thấy `status` chuyển thành `"booked"`. Đặt lại cùng phòng sẽ nhận `400 Bad Request`.
+> Đặt lại cùng phòng với ngày trùng lịch sẽ nhận `400 Bad Request` kèm thông báo phòng đã được đặt trong khoảng ngày đó.
 
 ---
 
 ### Test thanh toán riêng lẻ
 
-**`POST`** `http://localhost:8080/HotelBookingAPI/api/payments` | Headers: `Content-Type: application/json`
+**`POST`** `http://localhost:8080/HotelBookingAPI/api/payments`
+
+**Headers:** `Content-Type: application/json`
 
 ```json
-{ "bookingId": "BK1001", "amount": 1200000, "cardNumber": "12345678" }
+{
+  "bookingId": "BK1001",
+  "amount": 1200000,
+  "cardNumber": "12345678"
+}
 ```
-→ Response: `{ "status": "success", ... }`
+
+**Response:**
+```json
+{
+  "bookingId": "BK1001",
+  "amount": 1200000.0,
+  "cardNumber": "12345678",
+  "status": "success"
+}
+```
 
 ---
 
 ### Test gửi thông báo
 
-**`POST`** `http://localhost:8080/HotelBookingAPI/api/notifications` | Headers: `Content-Type: application/json`
+**`POST`** `http://localhost:8080/HotelBookingAPI/api/notifications`
+
+**Headers:** `Content-Type: application/json`
 
 ```json
-{ "email": "vana@gmail.com", "message": "Đặt phòng thành công!", "type": "booking_confirmation" }
+{
+  "email": "vana@gmail.com",
+  "message": "Đặt phòng thành công!",
+  "type": "booking_confirmation"
+}
 ```
-→ Response: `{ "message": "Thông báo đã được gửi thành công" }`
+
+**Response:**
+```json
+{
+  "message": "Thông báo đã được gửi thành công"
+}
+```
 
 ---
 
 ### Test cập nhật trạng thái phòng
 
-**`PUT`** `http://localhost:8080/HotelBookingAPI/api/rooms/R01/status` | Headers: `Content-Type: text/plain` | Body: `available`
+**`PUT`** `http://localhost:8080/HotelBookingAPI/api/rooms/R01/status`
 
-→ Response: `{ "message": "Đã cập nhật trạng thái phòng R01 thành available" }`
+**Headers:** `Content-Type: text/plain`
+
+**Body (raw text):** `available`
+
+**Response:**
+```json
+{
+  "message": "Đã cập nhật trạng thái phòng R01 thành available"
+}
+```
 
 ---
 
