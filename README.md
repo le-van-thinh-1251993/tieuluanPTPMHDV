@@ -9,6 +9,7 @@
 
 - [Giới thiệu](#-giới-thiệu)
 - [Kiến trúc hệ thống](#-kiến-trúc-hệ-thống)
+- [Luồng API](#-luồng-api)
 - [Cấu trúc project](#-cấu-trúc-project)
 - [Công nghệ sử dụng](#-công-nghệ-sử-dụng)
 - [Cài đặt và chạy](#-cài-đặt-và-chạy)
@@ -34,14 +35,14 @@ Hệ thống được thiết kế theo mô hình **Composable Services**, trong
 ## 🏗 Kiến trúc hệ thống
 
 ```
-┌─────────┐     ┌──────────────────┐     ┌──────────────┐
-│  Client  │────▶│  Booking Service │────▶│ Room Service │
-│(Postman) │     │   (Điều phối)    │     │              │
-└─────────┘     └──────────────────┘     └──────────────┘
-                        │
-                        ├────────────▶ Payment Service
-                        │
-                        └────────────▶ Notification Service
+┌─────────────┐     ┌──────────────────┐     ┌──────────────┐
+│   Client     │────▶│  Booking Service │────▶│ Room Service │
+│(UI/Postman)  │     │   (Điều phối)    │     │              │
+└─────────────┘     └──────────────────┘     └──────────────┘
+                            │
+                            ├────────────▶ Payment Service
+                            │
+                            └────────────▶ Notification Service
 ```
 
 **Quy trình đặt phòng:**
@@ -53,7 +54,34 @@ Hệ thống được thiết kế theo mô hình **Composable Services**, trong
 
 ---
 
-## 📁 Cấu trúc project
+## � Luồng API
+
+### Xem phòng
+```
+Client → GET /api/rooms → RoomResource → RoomService → XMLUtil (đọc rooms.xml) → JSON
+```
+
+### Đặt phòng (luồng chính — Service Composition)
+```
+Client → POST /api/bookings → BookingResource → BookingService điều phối:
+   1️⃣ RoomService.getRoomById()     → Kiểm tra phòng còn trống
+   2️⃣ PaymentService.process()      → Xử lý thanh toán → "success"
+   3️⃣ RoomService.updateStatus()    → Cập nhật phòng → "booked" (ghi rooms.xml)
+   4️⃣ XMLUtil.addBooking()          → Lưu booking vào bookings.xml
+   5️⃣ NotificationService.send()    → Gửi thông báo (in console)
+   → Trả BookingResponse (201 Created)
+```
+
+### Xem bookings
+```
+Client → GET /api/bookings → BookingResource → XMLUtil (đọc bookings.xml) → JSON
+```
+
+> **BookingService** là dịch vụ **trung tâm** — nhận request → gọi lần lượt các service con → trả kết quả. Đây chính là mô hình **Service Composition** trong SOA.
+
+---
+
+## �📁 Cấu trúc project
 
 ```
 HotelBookingAPI/
@@ -82,7 +110,7 @@ HotelBookingAPI/
 │       ├── rooms.xml                   # Dữ liệu phòng (5 phòng mẫu)
 │       └── bookings.xml                # Dữ liệu đặt phòng
 ├── web/
-│   ├── index.html                      # Trang chủ
+│   ├── index.html                      # Giao diện Web UI
 │   └── WEB-INF/
 │       ├── web.xml
 │       └── glassfish-web.xml
@@ -119,19 +147,16 @@ HotelBookingAPI/
    ```
 
 2. **Mở project trong NetBeans:**
-   - File → Open Project
-   - Chọn thư mục `HotelBookingAPI`
+   - File → Open Project → chọn thư mục `HotelBookingAPI`
 
 3. **Cấu hình Server:**
-   - Right-click project → Properties → Run
-   - Chọn **GlassFish Server** làm Server
+   - Right-click project → Properties → Run → chọn **GlassFish Server**
 
 4. **Chạy project:**
-   - Right-click project → **Run** (hoặc nhấn F6)
-   - NetBeans sẽ tự động deploy lên GlassFish
+   - Right-click project → **Run** (hoặc nhấn **F6**)
 
 5. **Truy cập:**
-   - Trang chủ: `http://localhost:8080/HotelBookingAPI/`
+   - Giao diện Web: `http://localhost:8080/HotelBookingAPI/`
    - API base URL: `http://localhost:8080/HotelBookingAPI/api/`
 
 ---
@@ -154,135 +179,35 @@ HotelBookingAPI/
 ## 🧪 Hướng dẫn kiểm thử bằng Postman
 
 ### Chuẩn bị
-1. Tải và cài đặt [Postman](https://www.postman.com/downloads/)
-2. Đảm bảo project đã được deploy lên GlassFish và đang chạy tại `http://localhost:8080`
-
-> **Lưu ý:** Tất cả URL bên dưới đều sử dụng base URL: `http://localhost:8080/HotelBookingAPI`
+1. Tải [Postman](https://www.postman.com/downloads/) và đảm bảo project đang chạy tại `http://localhost:8080`
+2. Base URL: `http://localhost:8080/HotelBookingAPI`
 
 ---
 
-### Test 1: Lấy danh sách tất cả phòng
+### Tổng quan các test case
 
-| Thông tin | Giá trị |
-|-----------|---------|
-| **Method** | `GET` |
-| **URL** | `http://localhost:8080/HotelBookingAPI/api/rooms` |
-| **Headers** | Không cần |
-| **Body** | Không cần |
-
-**Các bước thực hiện:**
-1. Mở Postman, tạo request mới
-2. Chọn method **GET**
-3. Nhập URL: `http://localhost:8080/HotelBookingAPI/api/rooms`
-4. Nhấn **Send**
-
-**Kết quả mong đợi (Status: 200 OK):**
-```json
-[
-  {
-    "id": "R01",
-    "type": "Deluxe",
-    "price": 1200000,
-    "status": "available"
-  },
-  {
-    "id": "R02",
-    "type": "Standard",
-    "price": 800000,
-    "status": "available"
-  },
-  {
-    "id": "R03",
-    "type": "Suite",
-    "price": 2500000,
-    "status": "available"
-  },
-  {
-    "id": "R04",
-    "type": "VIP",
-    "price": 3000000,
-    "status": "available"
-  },
-  {
-    "id": "R05",
-    "type": "Family",
-    "price": 1500000,
-    "status": "available"
-  }
-]
-```
+| # | Test | Method | URL | Kết quả mong đợi |
+|---|------|--------|-----|-------------------|
+| 1 | Danh sách phòng | `GET` | `/api/rooms` | 200 - 5 phòng |
+| 2 | Chi tiết phòng | `GET` | `/api/rooms/R01` | 200 - Thông tin R01 |
+| 3 | Lọc theo loại | `GET` | `/api/rooms/type/Deluxe` | 200 - Phòng Deluxe |
+| **4** | **⭐ Đặt phòng** | **`POST`** | **`/api/bookings`** | **201 - confirmed** |
+| 5 | Phòng sau khi đặt | `GET` | `/api/rooms/R01` | 200 - status: `booked` |
+| 6 | Đặt phòng đã book | `POST` | `/api/bookings` | 400 - Phòng không trống |
+| 7 | Danh sách booking | `GET` | `/api/bookings` | 200 - Danh sách bookings |
+| 8 | Thanh toán | `POST` | `/api/payments` | 200 - status: `success` |
+| 9 | Gửi thông báo | `POST` | `/api/notifications` | 200 - Gửi thành công |
+| 10 | Cập nhật trạng thái | `PUT` | `/api/rooms/R01/status` | 200 - Đã cập nhật |
 
 ---
 
-### Test 2: Xem chi tiết 1 phòng
+### ⭐ Test đặt phòng (Test chính)
 
-| Thông tin | Giá trị |
-|-----------|---------|
-| **Method** | `GET` |
-| **URL** | `http://localhost:8080/HotelBookingAPI/api/rooms/R01` |
+**`POST`** `http://localhost:8080/HotelBookingAPI/api/bookings`
 
-**Các bước thực hiện:**
-1. Chọn method **GET**
-2. Nhập URL: `http://localhost:8080/HotelBookingAPI/api/rooms/R01`
-3. Nhấn **Send**
+**Headers:** `Content-Type: application/json`
 
-**Kết quả mong đợi (Status: 200 OK):**
-```json
-{
-  "id": "R01",
-  "type": "Deluxe",
-  "price": 1200000,
-  "status": "available"
-}
-```
-
----
-
-### Test 3: Lọc phòng theo loại
-
-| Thông tin | Giá trị |
-|-----------|---------|
-| **Method** | `GET` |
-| **URL** | `http://localhost:8080/HotelBookingAPI/api/rooms/type/Deluxe` |
-
-**Các bước thực hiện:**
-1. Chọn method **GET**
-2. Nhập URL: `http://localhost:8080/HotelBookingAPI/api/rooms/type/Deluxe`
-3. Nhấn **Send**
-
-**Kết quả mong đợi (Status: 200 OK):**
-```json
-[
-  {
-    "id": "R01",
-    "type": "Deluxe",
-    "price": 1200000,
-    "status": "available"
-  }
-]
-```
-
-> **Thử thêm:** Thay `Deluxe` bằng `Standard`, `Suite`, `VIP`, hoặc `Family` để lọc phòng theo loại khác.
-
----
-
-### Test 4: Đặt phòng (⭐ Test chính)
-
-| Thông tin | Giá trị |
-|-----------|---------|
-| **Method** | `POST` |
-| **URL** | `http://localhost:8080/HotelBookingAPI/api/bookings` |
-| **Headers** | `Content-Type: application/json` |
-
-**Các bước thực hiện:**
-1. Chọn method **POST**
-2. Nhập URL: `http://localhost:8080/HotelBookingAPI/api/bookings`
-3. Chọn tab **Headers**, thêm:
-   - Key: `Content-Type`
-   - Value: `application/json`
-4. Chọn tab **Body** → chọn **raw** → chọn **JSON**
-5. Nhập nội dung Body:
-
+**Body:**
 ```json
 {
   "customerName": "Nguyen Van A",
@@ -296,210 +221,46 @@ HotelBookingAPI/
 }
 ```
 
-6. Nhấn **Send**
-
-**Kết quả mong đợi (Status: 201 Created):**
+**Response (201 Created):**
 ```json
 {
-  "bookingId": "BK1002",
+  "bookingId": "BK1006",
   "status": "confirmed",
   "message": "Booking successful"
 }
 ```
 
-> **Lưu ý:** `bookingId` sẽ tự động tăng (BK1002, BK1003, ...) mỗi lần đặt phòng mới.
+> Sau khi đặt, gửi `GET /api/rooms/R01` sẽ thấy `status` chuyển thành `"booked"`. Đặt lại cùng phòng sẽ nhận `400 Bad Request`.
 
 ---
 
-### Test 5: Kiểm tra trạng thái phòng sau khi đặt
+### Test thanh toán riêng lẻ
 
-| Thông tin | Giá trị |
-|-----------|---------|
-| **Method** | `GET` |
-| **URL** | `http://localhost:8080/HotelBookingAPI/api/rooms/R01` |
+**`POST`** `http://localhost:8080/HotelBookingAPI/api/payments` | Headers: `Content-Type: application/json`
 
-**Các bước thực hiện:**
-1. Sau khi Test 4 thành công, gửi lại request GET phòng R01
-2. Chọn method **GET**
-3. Nhập URL: `http://localhost:8080/HotelBookingAPI/api/rooms/R01`
-4. Nhấn **Send**
-
-**Kết quả mong đợi (Status: 200 OK):**
 ```json
-{
-  "id": "R01",
-  "type": "Deluxe",
-  "price": 1200000,
-  "status": "booked"
-}
+{ "bookingId": "BK1001", "amount": 1200000, "cardNumber": "12345678" }
 ```
-
-> ✅ Trạng thái phòng R01 đã chuyển từ `"available"` → `"booked"`.
+→ Response: `{ "status": "success", ... }`
 
 ---
 
-### Test 6: Đặt phòng đã được đặt (test lỗi)
+### Test gửi thông báo
 
-| Thông tin | Giá trị |
-|-----------|---------|
-| **Method** | `POST` |
-| **URL** | `http://localhost:8080/HotelBookingAPI/api/bookings` |
-| **Body** | Giống Test 4 (cùng roomId R01) |
+**`POST`** `http://localhost:8080/HotelBookingAPI/api/notifications` | Headers: `Content-Type: application/json`
 
-**Kết quả mong đợi (Status: 400 Bad Request):**
 ```json
-{
-  "bookingId": null,
-  "status": "failed",
-  "message": "Phòng R01 không còn trống"
-}
+{ "email": "vana@gmail.com", "message": "Đặt phòng thành công!", "type": "booking_confirmation" }
 ```
-
-> ✅ Hệ thống từ chối đặt phòng đã được book.
+→ Response: `{ "message": "Thông báo đã được gửi thành công" }`
 
 ---
 
-### Test 7: Xem danh sách tất cả booking
+### Test cập nhật trạng thái phòng
 
-| Thông tin | Giá trị |
-|-----------|---------|
-| **Method** | `GET` |
-| **URL** | `http://localhost:8080/HotelBookingAPI/api/bookings` |
+**`PUT`** `http://localhost:8080/HotelBookingAPI/api/rooms/R01/status` | Headers: `Content-Type: text/plain` | Body: `available`
 
-**Các bước thực hiện:**
-1. Chọn method **GET**
-2. Nhập URL: `http://localhost:8080/HotelBookingAPI/api/bookings`
-3. Nhấn **Send**
-
-**Kết quả mong đợi (Status: 200 OK):**
-```json
-[
-  {
-    "id": "BK1001",
-    "customerName": "Nguyen Van A",
-    "email": "vana@gmail.com",
-    "roomId": "R01",
-    "checkInDate": "2026-03-10",
-    "amount": 1200000,
-    "status": "confirmed"
-  },
-  {
-    "id": "BK1002",
-    "customerName": "Nguyen Van A",
-    "email": "vana@gmail.com",
-    "roomId": "R01",
-    "checkInDate": "2026-03-10",
-    "amount": 1200000,
-    "status": "confirmed"
-  }
-]
-```
-
----
-
-### Test 8: Thanh toán riêng lẻ
-
-| Thông tin | Giá trị |
-|-----------|---------|
-| **Method** | `POST` |
-| **URL** | `http://localhost:8080/HotelBookingAPI/api/payments` |
-| **Headers** | `Content-Type: application/json` |
-
-**Body:**
-```json
-{
-  "bookingId": "BK1001",
-  "amount": 1200000,
-  "cardNumber": "12345678"
-}
-```
-
-**Kết quả mong đợi (Status: 200 OK):**
-```json
-{
-  "bookingId": "BK1001",
-  "amount": 1200000,
-  "cardNumber": "12345678",
-  "status": "success"
-}
-```
-
----
-
-### Test 9: Gửi thông báo riêng lẻ
-
-| Thông tin | Giá trị |
-|-----------|---------|
-| **Method** | `POST` |
-| **URL** | `http://localhost:8080/HotelBookingAPI/api/notifications` |
-| **Headers** | `Content-Type: application/json` |
-
-**Body:**
-```json
-{
-  "email": "vana@gmail.com",
-  "message": "Đặt phòng thành công! Mã booking: BK1001",
-  "type": "booking_confirmation"
-}
-```
-
-**Kết quả mong đợi (Status: 200 OK):**
-```json
-{
-  "message": "Thông báo đã được gửi thành công"
-}
-```
-
-> **Lưu ý:** Thông báo sẽ được in ra console (log) của GlassFish Server.
-
----
-
-### Test 10: Cập nhật trạng thái phòng
-
-| Thông tin | Giá trị |
-|-----------|---------|
-| **Method** | `PUT` |
-| **URL** | `http://localhost:8080/HotelBookingAPI/api/rooms/R01/status` |
-| **Headers** | `Content-Type: text/plain` |
-
-**Body (raw - Text):**
-```
-available
-```
-
-**Các bước thực hiện:**
-1. Chọn method **PUT**
-2. Nhập URL: `http://localhost:8080/HotelBookingAPI/api/rooms/R01/status`
-3. Chọn tab **Headers**, thêm:
-   - Key: `Content-Type`
-   - Value: `text/plain`
-4. Chọn tab **Body** → chọn **raw** → chọn **Text**
-5. Nhập: `available`
-6. Nhấn **Send**
-
-**Kết quả mong đợi (Status: 200 OK):**
-```json
-{
-  "message": "Đã cập nhật trạng thái phòng R01 thành available"
-}
-```
-
----
-
-### Tóm tắt kịch bản test
-
-| # | Test | Method | Kết quả mong đợi |
-|---|------|--------|-------------------|
-| 1 | Lấy danh sách phòng | `GET /api/rooms` | 200 - 5 phòng |
-| 2 | Xem chi tiết phòng | `GET /api/rooms/R01` | 200 - Thông tin R01 |
-| 3 | Lọc phòng theo loại | `GET /api/rooms/type/Deluxe` | 200 - Phòng Deluxe |
-| 4 | **Đặt phòng** | `POST /api/bookings` | **201 - Booking confirmed** |
-| 5 | Kiểm tra phòng sau đặt | `GET /api/rooms/R01` | 200 - status: "booked" |
-| 6 | Đặt phòng đã book | `POST /api/bookings` | 400 - Phòng không trống |
-| 7 | Danh sách booking | `GET /api/bookings` | 200 - Danh sách bookings |
-| 8 | Thanh toán | `POST /api/payments` | 200 - status: "success" |
-| 9 | Gửi thông báo | `POST /api/notifications` | 200 - Gửi thành công |
-| 10 | Cập nhật trạng thái phòng | `PUT /api/rooms/R01/status` | 200 - Đã cập nhật |
+→ Response: `{ "message": "Đã cập nhật trạng thái phòng R01 thành available" }`
 
 ---
 
