@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hotel Booking API</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .container {
+            text-align: center;
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            max-width: 700px;
+        }
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #f7971e, #ffd200);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .subtitle { color: #aaa; font-size: 1.1em; margin-bottom: 30px; }
+        .api-list { text-align: left; margin: 20px 0; }
+        .api-item {
+            background: rgba(255, 255, 255, 0.08);
+            padding: 12px 20px;
+            margin: 8px 0;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transition: transform 0.2s ease, background 0.2s ease;
+        }
+        .api-item:hover {
+            transform: translateX(5px);
+            background: rgba(255, 255, 255, 0.12);
+        }
+        .method {
+            font-weight: bold;
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 0.85em;
+            min-width: 60px;
+            text-align: center;
+        }
+        .get { background: #28a745; }
+        .post { background: #007bff; }
+        .put { background: #ffc107; color: #000; }
+        .path { font-family: 'Consolas', monospace; color: #e0e0e0; }
+        .desc { color: #888; font-size: 0.9em; margin-left: auto; }
+        .footer { margin-top: 30px; color: #666; font-size: 0.9em; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏨 Hotel Booking API</h1>
+        <p class="subtitle">RESTful Web Service - JAX-RS</p>
+
+        <div class="api-list">
+            <div class="api-item">
+                <span class="method get">GET</span>
+                <span class="path">/api/rooms</span>
+                <span class="desc">Danh sách phòng</span>
+            </div>
+            <div class="api-item">
+                <span class="method get">GET</span>
+                <span class="path">/api/rooms/{id}</span>
+                <span class="desc">Chi tiết phòng</span>
+            </div>
+            <div class="api-item">
+                <span class="method get">GET</span>
+                <span class="path">/api/rooms/type/{type}</span>
+                <span class="desc">Lọc theo loại</span>
+            </div>
+            <div class="api-item">
+                <span class="method put">PUT</span>
+                <span class="path">/api/rooms/{id}/status</span>
+                <span class="desc">Cập nhật trạng thái</span>
+            </div>
+            <div class="api-item">
+                <span class="method post">POST</span>
+                <span class="path">/api/bookings</span>
+                <span class="desc">Đặt phòng</span>
+            </div>
+            <div class="api-item">
+                <span class="method get">GET</span>
+                <span class="path">/api/bookings</span>
+                <span class="desc">Danh sách booking</span>
+            </div>
+            <div class="api-item">
+                <span class="method post">POST</span>
+                <span class="path">/api/payments</span>
+                <span class="desc">Thanh toán</span>
+            </div>
+            <div class="api-item">
+                <span class="method post">POST</span>
+                <span class="path">/api/notifications</span>
+                <span class="desc">Gửi thông báo</span>
+            </div>
+        </div>
+
+        <p class="footer">Tiểu luận Phát triển PM hướng dịch vụ &bull; JAX-RS &bull; GlassFish</p>
+    </div>
+</body>
+</html>

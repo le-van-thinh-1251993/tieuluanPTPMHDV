@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bookings>
+
+    <booking>
+        <id>BK1001</id>
+        <customerName>Nguyen Van A</customerName>
+        <email>vana@gmail.com</email>
+        <roomId>R01</roomId>
+        <checkInDate>2026-03-10</checkInDate>
+        <amount>1200000</amount>
+        <status>confirmed</status>
+    </booking>
+
+</bookings>
