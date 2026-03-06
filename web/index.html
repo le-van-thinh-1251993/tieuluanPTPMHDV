@@ -336,6 +336,59 @@
         }
 
         /* ====== FILTER BAR ====== */
+        .date-filter-bar {
+            margin-bottom: 16px;
+        }
+
+        .date-filter-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 12px 18px;
+            display: inline-flex;
+        }
+
+        .date-filter-group label {
+            font-size: 0.88em;
+            font-weight: 500;
+            color: var(--text-muted);
+        }
+
+        .date-filter-group input[type="date"] {
+            padding: 8px 14px;
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.88em;
+        }
+
+        .date-filter-group input[type="date"]:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .date-clear-btn {
+            padding: 8px 14px;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--text-muted);
+            border-radius: 8px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.82em;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .date-clear-btn:hover {
+            background: var(--bg-card-hover);
+            color: var(--text);
+        }
+
         .filter-bar {
             display: flex;
             gap: 10px;
@@ -874,6 +927,15 @@
             <!-- Stats -->
             <div class="stats-bar" id="room-stats"></div>
 
+            <!-- Date Filter -->
+            <div class="date-filter-bar">
+                <div class="date-filter-group">
+                    <label>📅 Lọc theo ngày check-in:</label>
+                    <input type="date" id="filterDate" onchange="filterByDate()">
+                    <button class="date-clear-btn" onclick="clearDateFilter()">✖ Xóa lọc</button>
+                </div>
+            </div>
+
             <!-- Filter -->
             <div class="filter-bar">
                 <button class="filter-btn active" onclick="filterRooms('all', this)">Tất cả</button>
@@ -987,6 +1049,9 @@
     <script>
         const API_BASE = './api';
         let allRooms = [];
+        let allBookingsForFilter = [];
+        let currentDateFilter = '';
+        let currentTypeFilter = 'all';
 
         // ====== NAVIGATION ======
         function showPage(page) {
@@ -1003,9 +1068,13 @@
         // ====== ROOMS ======
         async function loadRooms() {
             try {
-                const res = await fetch(API_BASE + '/rooms');
-                allRooms = await res.json();
-                renderRooms(allRooms);
+                const [roomsRes, bookingsRes] = await Promise.all([
+                    fetch(API_BASE + '/rooms'),
+                    fetch(API_BASE + '/bookings')
+                ]);
+                allRooms = await roomsRes.json();
+                allBookingsForFilter = await bookingsRes.json();
+                applyFilters();
                 renderStats(allRooms);
             } catch (e) {
                 document.getElementById('rooms-grid').innerHTML =
@@ -1013,29 +1082,34 @@
             }
         }
 
-        function renderRooms(rooms) {
+        function renderRooms(rooms, bookedRoomIds) {
+            bookedRoomIds = bookedRoomIds || [];
             const grid = document.getElementById('rooms-grid');
             if (rooms.length === 0) {
                 grid.innerHTML = '<p style="color:var(--text-muted)">Không tìm thấy phòng nào.</p>';
                 return;
             }
             grid.innerHTML = rooms.map(room => {
-                const isAvailable = room.status === 'available';
+                const isBookedOnDate = bookedRoomIds.includes(room.id);
+                const isAvailable = room.status === 'available' && !isBookedOnDate;
                 const badgeClass = 'badge-' + room.type.toLowerCase();
+                const statusText = isBookedOnDate ? 'Đã đặt ngày này' : (room.status === 'available' ? 'Còn trống' : 'Đã đặt');
+                const statusClass = isAvailable ? 'status-available' : 'status-booked';
                 return `
                     <div class="room-card">
                         <span class="room-type-badge ${badgeClass}">${room.type}</span>
                         <p class="room-id">Mã phòng: ${room.id}</p>
                         <p class="room-name">Phòng ${room.type}</p>
                         <p class="room-price">${formatPrice(room.price)} <span>VND/đêm</span></p>
-                        <div class="room-status ${isAvailable ? 'status-available' : 'status-booked'}">
+                        <div class="room-status ${statusClass}">
                             <span class="status-dot"></span>
-                            ${isAvailable ? 'Còn trống' : 'Đã đặt'}
+                            ${statusText}
                         </div>
-                        <button class="btn-book ${isAvailable ? 'btn-book-available' : 'btn-book-disabled'}"
-                            ${isAvailable ? `onclick="goBookRoom('${room.id}')"` : 'disabled'}>
-                            ${isAvailable ? '🔑 Đặt phòng này' : '🚫 Đã được đặt'}
-                        </button>
+                        ${isAvailable ? `
+                            <button class="btn-book btn-book-available" onclick="goBookRoom('${room.id}')">
+                                🔑 Đặt phòng này
+                            </button>
+                        ` : ''}
                     </div>
                 `;
             }).join('');
@@ -1072,11 +1146,35 @@
         function filterRooms(type, btn) {
             document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-            if (type === 'all') {
-                renderRooms(allRooms);
-            } else {
-                renderRooms(allRooms.filter(r => r.type === type));
+            currentTypeFilter = type;
+            applyFilters();
+        }
+
+        // ====== DATE FILTER ======
+        function filterByDate() {
+            currentDateFilter = document.getElementById('filterDate').value;
+            applyFilters();
+        }
+
+        function clearDateFilter() {
+            document.getElementById('filterDate').value = '';
+            currentDateFilter = '';
+            applyFilters();
+        }
+
+        function applyFilters() {
+            // Filter by type
+            let filtered = currentTypeFilter === 'all' ? allRooms : allRooms.filter(r => r.type === currentTypeFilter);
+
+            // Find rooms booked on the selected date
+            let bookedRoomIds = [];
+            if (currentDateFilter) {
+                bookedRoomIds = allBookingsForFilter
+                    .filter(b => b.checkInDate === currentDateFilter && b.status === 'confirmed')
+                    .map(b => b.roomId);
             }
+
+            renderRooms(filtered, bookedRoomIds);
         }
 
         // ====== BOOKING FORM ======
