@@ -1,117 +1,1115 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hotel Booking API</title>
+    <title>Hotel Booking System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --primary-light: #818cf8;
+            --accent: #f59e0b;
+            --accent-dark: #d97706;
+            --success: #10b981;
+            --danger: #ef4444;
+            --bg-dark: #0f172a;
+            --bg-card: #1e293b;
+            --bg-card-hover: #334155;
+            --text: #f1f5f9;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
-            color: #fff;
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text);
             min-height: 100vh;
+        }
+
+        /* ====== HEADER ====== */
+        .header {
+            background: linear-gradient(135deg, var(--bg-card) 0%, #1a1a2e 100%);
+            border-bottom: 1px solid var(--border);
+            padding: 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(20px);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 16px 24px;
             display: flex;
-            justify-content: center;
             align-items: center;
+            justify-content: space-between;
         }
-        .container {
-            text-align: center;
-            padding: 40px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 20px;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            max-width: 700px;
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
-        h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
-            background: linear-gradient(90deg, #f7971e, #ffd200);
+
+        .logo-icon {
+            width: 42px;
+            height: 42px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+        }
+
+        .logo h1 {
+            font-size: 1.3em;
+            font-weight: 700;
+            background: linear-gradient(90deg, var(--text), var(--primary-light));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
-        .subtitle { color: #aaa; font-size: 1.1em; margin-bottom: 30px; }
-        .api-list { text-align: left; margin: 20px 0; }
-        .api-item {
-            background: rgba(255, 255, 255, 0.08);
-            padding: 12px 20px;
-            margin: 8px 0;
+
+        .logo p {
+            font-size: 0.72em;
+            color: var(--text-muted);
+        }
+
+        /* ====== NAVIGATION TABS ====== */
+        .nav-tabs {
+            display: flex;
+            gap: 4px;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 4px;
+            border-radius: 12px;
+        }
+
+        .nav-tab {
+            padding: 10px 20px;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.85em;
+            font-weight: 500;
+            cursor: pointer;
             border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-tab:hover {
+            color: var(--text);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .nav-tab.active {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+        }
+
+        /* ====== MAIN ====== */
+        .main {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 30px 24px;
+        }
+
+        .page {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ====== SECTION TITLE ====== */
+        .section-title {
+            font-size: 1.6em;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .section-subtitle {
+            color: var(--text-muted);
+            margin-bottom: 24px;
+            font-size: 0.95em;
+        }
+
+        /* ====== ROOM CARDS ====== */
+        .rooms-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .room-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .room-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .room-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--primary);
+            box-shadow: 0 20px 40px rgba(99, 102, 241, 0.15);
+        }
+
+        .room-card:hover::before {
+            opacity: 1;
+        }
+
+        .room-type-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75em;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-deluxe {
+            background: rgba(99, 102, 241, 0.15);
+            color: var(--primary-light);
+        }
+
+        .badge-standard {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--success);
+        }
+
+        .badge-suite {
+            background: rgba(245, 158, 11, 0.15);
+            color: var(--accent);
+        }
+
+        .badge-vip {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--danger);
+        }
+
+        .badge-family {
+            background: rgba(168, 85, 247, 0.15);
+            color: #a855f7;
+        }
+
+        .room-id {
+            color: var(--text-muted);
+            font-size: 0.8em;
+            margin-top: 12px;
+        }
+
+        .room-name {
+            font-size: 1.3em;
+            font-weight: 700;
+            margin: 8px 0;
+        }
+
+        .room-price {
+            font-size: 1.5em;
+            font-weight: 800;
+            background: linear-gradient(90deg, var(--accent), #fbbf24);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .room-price span {
+            font-size: 0.5em;
+            font-weight: 400;
+            -webkit-text-fill-color: var(--text-muted);
+        }
+
+        .room-status {
             display: flex;
             align-items: center;
-            gap: 15px;
-            transition: transform 0.2s ease, background 0.2s ease;
-        }
-        .api-item:hover {
-            transform: translateX(5px);
-            background: rgba(255, 255, 255, 0.12);
-        }
-        .method {
-            font-weight: bold;
-            padding: 4px 12px;
-            border-radius: 6px;
+            gap: 6px;
+            margin-top: 12px;
             font-size: 0.85em;
-            min-width: 60px;
-            text-align: center;
         }
-        .get { background: #28a745; }
-        .post { background: #007bff; }
-        .put { background: #ffc107; color: #000; }
-        .path { font-family: 'Consolas', monospace; color: #e0e0e0; }
-        .desc { color: #888; font-size: 0.9em; margin-left: auto; }
-        .footer { margin-top: 30px; color: #666; font-size: 0.9em; }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .status-available .status-dot {
+            background: var(--success);
+        }
+
+        .status-booked .status-dot {
+            background: var(--danger);
+            animation: none;
+        }
+
+        .status-available {
+            color: var(--success);
+        }
+
+        .status-booked {
+            color: var(--danger);
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.4;
+            }
+        }
+
+        .btn-book {
+            width: 100%;
+            padding: 12px;
+            margin-top: 16px;
+            border: none;
+            border-radius: 10px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-book-available {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+        }
+
+        .btn-book-available:hover {
+            transform: scale(1.02);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-book-disabled {
+            background: var(--bg-card-hover);
+            color: var(--text-muted);
+            cursor: not-allowed;
+        }
+
+        /* ====== FILTER BAR ====== */
+        .filter-bar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 8px 18px;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--text-muted);
+            border-radius: 20px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.82em;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .filter-btn:hover {
+            border-color: var(--primary-light);
+            color: var(--text);
+        }
+
+        .filter-btn.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+        }
+
+        /* ====== BOOKING FORM ====== */
+        .booking-form-container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .form-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 32px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.85em;
+            font-weight: 500;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px 16px;
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95em;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 14px;
+            margin-top: 8px;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            font-family: 'Inter', sans-serif;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-submit:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* ====== BOOKINGS TABLE ====== */
+        .bookings-table-wrap {
+            overflow-x: auto;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+        }
+
+        .bookings-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--bg-card);
+        }
+
+        .bookings-table th {
+            padding: 14px 18px;
+            text-align: left;
+            font-size: 0.78em;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+            background: rgba(0, 0, 0, 0.2);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .bookings-table td {
+            padding: 14px 18px;
+            font-size: 0.9em;
+            border-bottom: 1px solid rgba(51, 65, 85, 0.5);
+        }
+
+        .bookings-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .bookings-table tr:hover td {
+            background: rgba(99, 102, 241, 0.05);
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.8em;
+            font-weight: 600;
+        }
+
+        .status-confirmed {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--success);
+        }
+
+        .status-failed {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--danger);
+        }
+
+        /* ====== MODAL ====== */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(4px);
+            z-index: 200;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 440px;
+            width: 90%;
+            text-align: center;
+            animation: modalIn 0.3s ease;
+        }
+
+        @keyframes modalIn {
+            from {
+                transform: scale(0.9);
+                opacity: 0;
+            }
+
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .modal-icon {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+        }
+
+        .modal-icon.success {
+            background: rgba(16, 185, 129, 0.15);
+        }
+
+        .modal-icon.error {
+            background: rgba(239, 68, 68, 0.15);
+        }
+
+        .modal h3 {
+            font-size: 1.3em;
+            margin-bottom: 10px;
+        }
+
+        .modal p {
+            color: var(--text-muted);
+            margin-bottom: 6px;
+            font-size: 0.95em;
+        }
+
+        .modal .detail {
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .modal-close {
+            margin-top: 24px;
+            padding: 10px 32px;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--text);
+            border-radius: 10px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9em;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .modal-close:hover {
+            background: var(--bg-card-hover);
+        }
+
+        /* ====== LOADING ====== */
+        .loading {
+            text-align: center;
+            padding: 60px;
+            color: var(--text-muted);
+        }
+
+        .spinner {
+            width: 36px;
+            height: 36px;
+            border: 3px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 16px;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* ====== STATS BAR ====== */
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 20px;
+        }
+
+        .stat-label {
+            font-size: 0.78em;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-value {
+            font-size: 1.8em;
+            font-weight: 800;
+            margin-top: 4px;
+        }
+
+        .stat-value.text-primary {
+            color: var(--primary-light);
+        }
+
+        .stat-value.text-success {
+            color: var(--success);
+        }
+
+        .stat-value.text-danger {
+            color: var(--danger);
+        }
+
+        .stat-value.text-accent {
+            color: var(--accent);
+        }
+
+        /* ====== TOAST ====== */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            padding: 14px 24px;
+            border-radius: 12px;
+            font-size: 0.9em;
+            font-weight: 500;
+            z-index: 300;
+            animation: toastIn 0.4s ease;
+            display: none;
+        }
+
+        .toast.show {
+            display: block;
+        }
+
+        .toast.success {
+            background: var(--success);
+            color: white;
+        }
+
+        .toast.error {
+            background: var(--danger);
+            color: white;
+        }
+
+        @keyframes toastIn {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* ====== RESPONSIVE ====== */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-bar {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
     </style>
 </head>
-<body>
-    <div class="container">
-        <h1>🏨 Hotel Booking API</h1>
-        <p class="subtitle">RESTful Web Service - JAX-RS</p>
 
-        <div class="api-list">
-            <div class="api-item">
-                <span class="method get">GET</span>
-                <span class="path">/api/rooms</span>
-                <span class="desc">Danh sách phòng</span>
+<body>
+
+    <!-- HEADER -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <div class="logo-icon">🏨</div>
+                <div>
+                    <h1>Hotel Booking</h1>
+                    <p>RESTful Web Service System</p>
+                </div>
             </div>
-            <div class="api-item">
-                <span class="method get">GET</span>
-                <span class="path">/api/rooms/{id}</span>
-                <span class="desc">Chi tiết phòng</span>
+            <div class="nav-tabs">
+                <button class="nav-tab active" onclick="showPage('rooms')">🏠 Phòng</button>
+                <button class="nav-tab" onclick="showPage('booking')">📝 Đặt phòng</button>
+                <button class="nav-tab" onclick="showPage('bookings')">📋 Bookings</button>
             </div>
-            <div class="api-item">
-                <span class="method get">GET</span>
-                <span class="path">/api/rooms/type/{type}</span>
-                <span class="desc">Lọc theo loại</span>
+        </div>
+    </header>
+
+    <!-- MAIN -->
+    <main class="main">
+
+        <!-- ===== PAGE: ROOMS ===== -->
+        <div id="page-rooms" class="page active">
+            <h2 class="section-title">Danh sách phòng</h2>
+            <p class="section-subtitle">Chọn phòng phù hợp với nhu cầu của bạn</p>
+
+            <!-- Stats -->
+            <div class="stats-bar" id="room-stats"></div>
+
+            <!-- Filter -->
+            <div class="filter-bar">
+                <button class="filter-btn active" onclick="filterRooms('all', this)">Tất cả</button>
+                <button class="filter-btn" onclick="filterRooms('Deluxe', this)">Deluxe</button>
+                <button class="filter-btn" onclick="filterRooms('Standard', this)">Standard</button>
+                <button class="filter-btn" onclick="filterRooms('Suite', this)">Suite</button>
+                <button class="filter-btn" onclick="filterRooms('VIP', this)">VIP</button>
+                <button class="filter-btn" onclick="filterRooms('Family', this)">Family</button>
             </div>
-            <div class="api-item">
-                <span class="method put">PUT</span>
-                <span class="path">/api/rooms/{id}/status</span>
-                <span class="desc">Cập nhật trạng thái</span>
-            </div>
-            <div class="api-item">
-                <span class="method post">POST</span>
-                <span class="path">/api/bookings</span>
-                <span class="desc">Đặt phòng</span>
-            </div>
-            <div class="api-item">
-                <span class="method get">GET</span>
-                <span class="path">/api/bookings</span>
-                <span class="desc">Danh sách booking</span>
-            </div>
-            <div class="api-item">
-                <span class="method post">POST</span>
-                <span class="path">/api/payments</span>
-                <span class="desc">Thanh toán</span>
-            </div>
-            <div class="api-item">
-                <span class="method post">POST</span>
-                <span class="path">/api/notifications</span>
-                <span class="desc">Gửi thông báo</span>
+
+            <!-- Room Grid -->
+            <div class="rooms-grid" id="rooms-grid">
+                <div class="loading">
+                    <div class="spinner"></div>Đang tải dữ liệu...
+                </div>
             </div>
         </div>
 
-        <p class="footer">Tiểu luận Phát triển PM hướng dịch vụ &bull; JAX-RS &bull; GlassFish</p>
+        <!-- ===== PAGE: BOOKING FORM ===== -->
+        <div id="page-booking" class="page">
+            <h2 class="section-title">Đặt phòng</h2>
+            <p class="section-subtitle">Điền thông tin để đặt phòng khách sạn</p>
+
+            <div class="booking-form-container">
+                <div class="form-card">
+                    <form id="booking-form" onsubmit="submitBooking(event)">
+                        <div class="form-group">
+                            <label>Họ và tên</label>
+                            <input type="text" id="customerName" placeholder="Nguyen Van A" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Email</label>
+                            <input type="email" id="email" placeholder="example@gmail.com" required>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Chọn phòng</label>
+                                <select id="roomId" required>
+                                    <option value="">-- Chọn phòng --</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Ngày check-in</label>
+                                <input type="date" id="checkInDate" required>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Số thẻ thanh toán</label>
+                                <input type="text" id="cardNumber" placeholder="12345678" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Số tiền (VND)</label>
+                                <input type="number" id="amount" readonly>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn-submit" id="btn-submit">
+                            Xác nhận đặt phòng
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== PAGE: BOOKINGS LIST ===== -->
+        <div id="page-bookings" class="page">
+            <h2 class="section-title">Danh sách đặt phòng</h2>
+            <p class="section-subtitle">Tất cả các booking trong hệ thống</p>
+
+            <div class="bookings-table-wrap" id="bookings-table-wrap">
+                <div class="loading">
+                    <div class="spinner"></div>Đang tải dữ liệu...
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- MODAL -->
+    <div class="modal-overlay" id="modal">
+        <div class="modal">
+            <div class="modal-icon" id="modal-icon">✅</div>
+            <h3 id="modal-title">Thành công!</h3>
+            <p id="modal-message"></p>
+            <p id="modal-detail" class="detail"></p>
+            <button class="modal-close" onclick="closeModal()">Đóng</button>
+        </div>
     </div>
+
+    <!-- TOAST -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        const API_BASE = './api';
+        let allRooms = [];
+
+        // ====== NAVIGATION ======
+        function showPage(page) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+            document.getElementById('page-' + page).classList.add('active');
+            event.target.classList.add('active');
+
+            if (page === 'rooms') loadRooms();
+            if (page === 'booking') loadRoomOptions();
+            if (page === 'bookings') loadBookings();
+        }
+
+        // ====== ROOMS ======
+        async function loadRooms() {
+            try {
+                const res = await fetch(API_BASE + '/rooms');
+                allRooms = await res.json();
+                renderRooms(allRooms);
+                renderStats(allRooms);
+            } catch (e) {
+                document.getElementById('rooms-grid').innerHTML =
+                    '<p style="color:var(--danger)">❌ Không thể kết nối API. Hãy chắc chắn server đang chạy.</p>';
+            }
+        }
+
+        function renderRooms(rooms) {
+            const grid = document.getElementById('rooms-grid');
+            if (rooms.length === 0) {
+                grid.innerHTML = '<p style="color:var(--text-muted)">Không tìm thấy phòng nào.</p>';
+                return;
+            }
+            grid.innerHTML = rooms.map(room => {
+                const isAvailable = room.status === 'available';
+                const badgeClass = 'badge-' + room.type.toLowerCase();
+                return `
+                    <div class="room-card">
+                        <span class="room-type-badge ${badgeClass}">${room.type}</span>
+                        <p class="room-id">Mã phòng: ${room.id}</p>
+                        <p class="room-name">Phòng ${room.type}</p>
+                        <p class="room-price">${formatPrice(room.price)} <span>VND/đêm</span></p>
+                        <div class="room-status ${isAvailable ? 'status-available' : 'status-booked'}">
+                            <span class="status-dot"></span>
+                            ${isAvailable ? 'Còn trống' : 'Đã đặt'}
+                        </div>
+                        <button class="btn-book ${isAvailable ? 'btn-book-available' : 'btn-book-disabled'}"
+                            ${isAvailable ? `onclick="goBookRoom('${room.id}')"` : 'disabled'}>
+                            ${isAvailable ? '🔑 Đặt phòng này' : '🚫 Đã được đặt'}
+                        </button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderStats(rooms) {
+            const total = rooms.length;
+            const available = rooms.filter(r => r.status === 'available').length;
+            const booked = rooms.filter(r => r.status === 'booked').length;
+            const avgPrice = rooms.length > 0
+                ? Math.round(rooms.reduce((s, r) => s + r.price, 0) / rooms.length)
+                : 0;
+
+            document.getElementById('room-stats').innerHTML = `
+                <div class="stat-card">
+                    <p class="stat-label">Tổng phòng</p>
+                    <p class="stat-value text-primary">${total}</p>
+                </div>
+                <div class="stat-card">
+                    <p class="stat-label">Còn trống</p>
+                    <p class="stat-value text-success">${available}</p>
+                </div>
+                <div class="stat-card">
+                    <p class="stat-label">Đã đặt</p>
+                    <p class="stat-value text-danger">${booked}</p>
+                </div>
+                <div class="stat-card">
+                    <p class="stat-label">Giá trung bình</p>
+                    <p class="stat-value text-accent">${formatPrice(avgPrice)}</p>
+                </div>
+            `;
+        }
+
+        function filterRooms(type, btn) {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            if (type === 'all') {
+                renderRooms(allRooms);
+            } else {
+                renderRooms(allRooms.filter(r => r.type === type));
+            }
+        }
+
+        // ====== BOOKING FORM ======
+        function goBookRoom(roomId) {
+            // Switch to booking page
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+            document.getElementById('page-booking').classList.add('active');
+            document.querySelectorAll('.nav-tab')[1].classList.add('active');
+
+            loadRoomOptions().then(() => {
+                document.getElementById('roomId').value = roomId;
+                updatePrice();
+            });
+        }
+
+        async function loadRoomOptions() {
+            try {
+                const res = await fetch(API_BASE + '/rooms');
+                const rooms = await res.json();
+                const select = document.getElementById('roomId');
+                const currentVal = select.value;
+                select.innerHTML = '<option value="">-- Chọn phòng --</option>';
+                rooms.filter(r => r.status === 'available').forEach(room => {
+                    select.innerHTML += `<option value="${room.id}" data-price="${room.price}">
+                        ${room.id} - ${room.type} (${formatPrice(room.price)} VND)
+                    </option>`;
+                });
+                if (currentVal) select.value = currentVal;
+                updatePrice();
+            } catch (e) {
+                console.error('Error loading rooms:', e);
+            }
+        }
+
+        function updatePrice() {
+            const select = document.getElementById('roomId');
+            const option = select.options[select.selectedIndex];
+            const price = option ? option.getAttribute('data-price') : '';
+            document.getElementById('amount').value = price || '';
+        }
+
+        document.getElementById('roomId').addEventListener('change', updatePrice);
+
+        async function submitBooking(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btn-submit');
+            btn.disabled = true;
+            btn.textContent = '⏳ Đang xử lý...';
+
+            const body = {
+                customerName: document.getElementById('customerName').value,
+                email: document.getElementById('email').value,
+                roomId: document.getElementById('roomId').value,
+                checkInDate: document.getElementById('checkInDate').value,
+                paymentInfo: {
+                    cardNumber: document.getElementById('cardNumber').value,
+                    amount: parseFloat(document.getElementById('amount').value)
+                }
+            };
+
+            try {
+                const res = await fetch(API_BASE + '/bookings', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+                const data = await res.json();
+
+                if (res.ok) {
+                    showModal('success', 'Đặt phòng thành công! 🎉',
+                        `Mã booking: ${data.bookingId}`,
+                        data.message);
+                    document.getElementById('booking-form').reset();
+                } else {
+                    showModal('error', 'Đặt phòng thất bại ❌',
+                        data.message || 'Có lỗi xảy ra',
+                        '');
+                }
+            } catch (e) {
+                showModal('error', 'Lỗi kết nối ❌',
+                    'Không thể kết nối tới server',
+                    'Hãy kiểm tra GlassFish đang chạy.');
+            }
+
+            btn.disabled = false;
+            btn.textContent = 'Xác nhận đặt phòng';
+        }
+
+        // ====== BOOKINGS LIST ======
+        async function loadBookings() {
+            try {
+                const res = await fetch(API_BASE + '/bookings');
+                const bookings = await res.json();
+                renderBookings(bookings);
+            } catch (e) {
+                document.getElementById('bookings-table-wrap').innerHTML =
+                    '<p style="padding:20px;color:var(--danger)">❌ Không thể tải dữ liệu booking.</p>';
+            }
+        }
+
+        function renderBookings(bookings) {
+            if (bookings.length === 0) {
+                document.getElementById('bookings-table-wrap').innerHTML =
+                    '<p style="padding:20px;color:var(--text-muted)">Chưa có booking nào.</p>';
+                return;
+            }
+            document.getElementById('bookings-table-wrap').innerHTML = `
+                <table class="bookings-table">
+                    <thead>
+                        <tr>
+                            <th>Mã Booking</th>
+                            <th>Khách hàng</th>
+                            <th>Email</th>
+                            <th>Phòng</th>
+                            <th>Check-in</th>
+                            <th>Số tiền</th>
+                            <th>Trạng thái</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${bookings.map(b => `
+                            <tr>
+                                <td><strong>${b.id}</strong></td>
+                                <td>${b.customerName}</td>
+                                <td>${b.email}</td>
+                                <td>${b.roomId}</td>
+                                <td>${b.checkInDate}</td>
+                                <td><strong>${formatPrice(b.amount)}</strong> VND</td>
+                                <td><span class="status-badge status-${b.status}">${b.status}</span></td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        // ====== MODAL ======
+        function showModal(type, title, message, detail) {
+            document.getElementById('modal-icon').className = 'modal-icon ' + type;
+            document.getElementById('modal-icon').textContent = type === 'success' ? '✅' : '❌';
+            document.getElementById('modal-title').textContent = title;
+            document.getElementById('modal-message').textContent = message;
+            document.getElementById('modal-detail').textContent = detail;
+            document.getElementById('modal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.remove('active');
+        }
+
+        // ====== TOAST ======
+        function showToast(message, type) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = 'toast show ' + type;
+            setTimeout(() => { toast.classList.remove('show'); }, 3000);
+        }
+
+        // ====== UTILS ======
+        function formatPrice(price) {
+            return new Intl.NumberFormat('vi-VN').format(price);
+        }
+
+        // ====== INIT ======
+        document.addEventListener('DOMContentLoaded', () => {
+            loadRooms();
+            // Set default check-in date to tomorrow
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            document.getElementById('checkInDate').value = tomorrow.toISOString().split('T')[0];
+        });
+    </script>
 </body>
+
 </html>

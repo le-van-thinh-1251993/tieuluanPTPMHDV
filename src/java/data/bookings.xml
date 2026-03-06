@@ -3,11 +3,51 @@
 
     <booking>
         <id>BK1001</id>
-        <customerName>Nguyen Van A</customerName>
-        <email>vana@gmail.com</email>
+        <customerName>Lê Văn Thịnh</customerName>
+        <email>thinh.b24dtcn494@gmail.com</email>
         <roomId>R01</roomId>
         <checkInDate>2026-03-10</checkInDate>
         <amount>1200000</amount>
+        <status>confirmed</status>
+    </booking>
+
+    <booking>
+        <id>BK1002</id>
+        <customerName>Nguyễn Thị Vinh</customerName>
+        <email>vinh.k23dtcn471@gmail.com</email>
+        <roomId>R02</roomId>
+        <checkInDate>2026-03-11</checkInDate>
+        <amount>800000</amount>
+        <status>confirmed</status>
+    </booking>
+
+    <booking>
+        <id>BK1003</id>
+        <customerName>Nguyễn Thị Ngọc Anh</customerName>
+        <email>ngocanh.k24dtcn110@gmail.com</email>
+        <roomId>R03</roomId>
+        <checkInDate>2026-03-12</checkInDate>
+        <amount>2500000</amount>
+        <status>confirmed</status>
+    </booking>
+
+    <booking>
+        <id>BK1004</id>
+        <customerName>Nguyễn Thị Hoan</customerName>
+        <email>hoan.k23dtcn452@gmail.com</email>
+        <roomId>R04</roomId>
+        <checkInDate>2026-03-13</checkInDate>
+        <amount>3000000</amount>
+        <status>confirmed</status>
+    </booking>
+
+    <booking>
+        <id>BK1005</id>
+        <customerName>Nguyễn Thị Tuyết</customerName>
+        <email>tuyet.k23dtcn468@gmail.com</email>
+        <roomId>R05</roomId>
+        <checkInDate>2026-03-14</checkInDate>
+        <amount>1500000</amount>
         <status>confirmed</status>
     </booking>
 
