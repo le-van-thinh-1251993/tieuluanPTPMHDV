@@ -1101,9 +1101,9 @@
             }
             grid.innerHTML = rooms.map(room => {
                 const isBookedOnDate = bookedRoomIds.includes(room.id);
-                const isAvailable = room.status === 'available' && !isBookedOnDate;
+                const isAvailable = !isBookedOnDate;
                 const badgeClass = 'badge-' + room.type.toLowerCase();
-                const statusText = isBookedOnDate ? 'Đã đặt ngày này' : (room.status === 'available' ? 'Còn trống' : 'Đã đặt');
+                const statusText = isBookedOnDate ? 'Đã đặt ngày này' : 'Còn trống';
                 const statusClass = isAvailable ? 'status-available' : 'status-booked';
                 return `
                     <div class="room-card">
