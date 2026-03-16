@@ -11,6 +11,9 @@
         <nights>2</nights>
         <amount>2400000</amount>
         <status>confirmed</status>
+        <paymentStatus>success</paymentStatus>
+        <paidAmount>2400000</paidAmount>
+        <bankName>VCB</bankName>
     </booking>
 
     <booking>
@@ -23,6 +26,9 @@
         <nights>3</nights>
         <amount>2400000</amount>
         <status>confirmed</status>
+        <paymentStatus>success</paymentStatus>
+        <paidAmount>2400000</paidAmount>
+        <bankName>ACB</bankName>
     </booking>
 
     <booking>
@@ -35,6 +41,9 @@
         <nights>1</nights>
         <amount>2500000</amount>
         <status>confirmed</status>
+        <paymentStatus>success</paymentStatus>
+        <paidAmount>2500000</paidAmount>
+        <bankName>VietinBank</bankName>
     </booking>
 
     <booking>
@@ -47,6 +56,9 @@
         <nights>2</nights>
         <amount>6000000</amount>
         <status>confirmed</status>
+        <paymentStatus>success</paymentStatus>
+        <paidAmount>6000000</paidAmount>
+        <bankName>Techcombank</bankName>
     </booking>
 
     <booking>
@@ -59,6 +71,9 @@
         <nights>2</nights>
         <amount>3000000</amount>
         <status>confirmed</status>
+        <paymentStatus>success</paymentStatus>
+        <paidAmount>3000000</paidAmount>
+        <bankName>MB</bankName>
     </booking>
 
 </bookings>

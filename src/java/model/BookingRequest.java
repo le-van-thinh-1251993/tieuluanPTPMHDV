@@ -79,6 +79,7 @@ public class BookingRequest {
     public static class PaymentInfo {
         private String cardNumber;
         private double amount;
+        private String bankName;
 
         public PaymentInfo() {
         }
@@ -97,6 +98,14 @@ public class BookingRequest {
 
         public void setAmount(double amount) {
             this.amount = amount;
+        }
+
+        public String getBankName() {
+            return bankName;
+        }
+
+        public void setBankName(String bankName) {
+            this.bankName = bankName;
         }
     }
 }

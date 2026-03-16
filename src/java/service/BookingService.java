@@ -1,28 +1,52 @@
 package service;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
-import model.*;
+import model.Booking;
+import model.BookingRequest;
+import model.BookingResponse;
+import model.Notification;
+import model.Payment;
+import model.Room;
 import util.XMLUtil;
 
 /**
- * Booking Service - Dịch vụ trung tâm của hệ thống.
- * 
- * Điều phối các dịch vụ khác để hoàn thành quy trình đặt phòng:
- * 1. Nhận yêu cầu đặt phòng
- * 2. Kiểm tra phòng trống (Room Service)
- * 3. Thực hiện thanh toán (Payment Service)
- * 4. Cập nhật trạng thái phòng (Room Service)
- * 5. Gửi thông báo (Notification Service)
+ * Booking Service - điều phối luồng đặt phòng.
  */
 public class BookingService {
 
     /**
      * Tạo booking mới - điều phối toàn bộ flow.
-     * 
+     *
      * @param request Thông tin đặt phòng từ client
      * @return BookingResponse chứa kết quả
      */
     public static BookingResponse createBooking(BookingRequest request) {
+        if (request == null) {
+            return new BookingResponse(null, "failed", "Request body rỗng");
+        }
+
+        LocalDate checkIn;
+        LocalDate checkOut;
+        try {
+            checkIn = LocalDate.parse(request.getCheckInDate());
+            if (request.getCheckOutDate() != null && !request.getCheckOutDate().isEmpty()) {
+                checkOut = LocalDate.parse(request.getCheckOutDate());
+            } else {
+                int nightsReq = request.getNights() > 0 ? request.getNights() : 1;
+                checkOut = checkIn.plusDays(nightsReq);
+            }
+        } catch (DateTimeParseException ex) {
+            return new BookingResponse(null, "failed", "Ngày check-in/check-out không đúng định dạng yyyy-MM-dd");
+        }
+
+        if (!checkOut.isAfter(checkIn)) {
+            return new BookingResponse(null, "failed", "Ngày check-out phải sau check-in");
+        }
+
+        int nights = (int) ChronoUnit.DAYS.between(checkIn, checkOut);
         System.out.println("[BookingService] Bắt đầu xử lý đặt phòng...");
 
         // Bước 1: Kiểm tra phòng tồn tại
@@ -33,22 +57,13 @@ public class BookingService {
 
         // Bước 1b: Kiểm tra trùng ngày (overlap)
         List<Booking> existingBookings = XMLUtil.readBookings();
-        String newCheckIn = request.getCheckInDate();
-        String newCheckOut = request.getCheckOutDate();
-        if (newCheckOut == null || newCheckOut.isEmpty()) {
-            newCheckOut = newCheckIn; // fallback: 1 đêm
-        }
         for (Booking existing : existingBookings) {
-            if (existing.getRoomId().equals(request.getRoomId()) && "confirmed".equals(existing.getStatus())) {
-                String exCheckIn = existing.getCheckInDate();
-                String exCheckOut = existing.getCheckOutDate();
-                if (exCheckOut == null || exCheckOut.isEmpty()) {
-                    exCheckOut = exCheckIn;
-                }
-                // Overlap: newCheckIn < exCheckOut AND newCheckOut > exCheckIn
-                if (newCheckIn.compareTo(exCheckOut) < 0 && newCheckOut.compareTo(exCheckIn) > 0) {
+            if (existing.getRoomId().equals(request.getRoomId()) && "confirmed".equalsIgnoreCase(existing.getStatus())) {
+                LocalDate exIn = parseDateSafe(existing.getCheckInDate(), checkIn);
+                LocalDate exOut = parseDateSafe(existing.getCheckOutDate(), exIn.plusDays(existing.getNights()));
+                if (isOverlap(checkIn, checkOut, exIn, exOut)) {
                     return new BookingResponse(null, "failed",
-                            "Phòng " + request.getRoomId() + " đã được đặt từ " + exCheckIn + " đến " + exCheckOut);
+                            "Phòng " + request.getRoomId() + " đã được đặt từ " + exIn + " đến " + exOut);
                 }
             }
         }
@@ -57,41 +72,69 @@ public class BookingService {
 
         // Bước 2: Tạo ID booking mới
         String bookingId = XMLUtil.generateBookingId();
-        double amount = (request.getPaymentInfo() != null) ? request.getPaymentInfo().getAmount() : room.getPrice();
 
-        // Bước 3: Xử lý thanh toán
+        // Bước 3: Tính và kiểm tra số tiền + thông tin thanh toán
+        if (request.getPaymentInfo() == null) {
+            return new BookingResponse(bookingId, "failed", "Thiếu thông tin thanh toán");
+        }
+        double expectedAmount = room.getPrice() * nights;
+        double requestedAmount = request.getPaymentInfo().getAmount();
+        if (request.getPaymentInfo().getCardNumber() == null
+                || request.getPaymentInfo().getCardNumber().trim().length() < 4) {
+            return new BookingResponse(bookingId, "failed", "Số thẻ phải tối thiểu 4 ký tự");
+        }
+        if (request.getPaymentInfo().getBankName() == null || request.getPaymentInfo().getBankName().trim().isEmpty()) {
+            return new BookingResponse(bookingId, "failed", "Thiếu tên ngân hàng");
+        }
+        if (requestedAmount <= 0) {
+            return new BookingResponse(bookingId, "failed", "Số tiền thanh toán phải > 0");
+        }
+        if (Math.abs(expectedAmount - requestedAmount) > 0.0001) {
+            return new BookingResponse(bookingId, "failed",
+                    "Số tiền phải bằng giá phòng x số đêm (" + (long) expectedAmount + " VND)");
+        }
+
+        // Bước 4: Xử lý thanh toán
         Payment payment = new Payment();
         payment.setBookingId(bookingId);
-        payment.setAmount(amount);
-        payment.setCardNumber(request.getPaymentInfo() != null ? request.getPaymentInfo().getCardNumber() : "N/A");
+        payment.setAmount(expectedAmount);
+        payment.setCardNumber(request.getPaymentInfo().getCardNumber());
+        payment.setBankName(request.getPaymentInfo().getBankName());
 
         Payment paymentResult = PaymentService.processPayment(payment);
         if (!"success".equals(paymentResult.getStatus())) {
             return new BookingResponse(bookingId, "failed", "Thanh toán thất bại");
         }
 
-        // Bước 4: Lưu booking vào XML
+        // Bước 5: Lưu booking vào XML kèm trạng thái thanh toán
         Booking booking = new Booking(
                 bookingId,
                 request.getCustomerName(),
                 request.getEmail(),
                 request.getRoomId(),
-                request.getCheckInDate(),
-                request.getCheckOutDate() != null ? request.getCheckOutDate() : "",
-                request.getNights() > 0 ? request.getNights() : 1,
-                amount,
-                "confirmed");
+                checkIn.toString(),
+                checkOut.toString(),
+                nights,
+                expectedAmount,
+                "confirmed",
+                paymentResult.getStatus(),
+                paymentResult.getAmount(),
+                paymentResult.getBankName());
         XMLUtil.writeBooking(booking);
         System.out.println("[BookingService] Đã lưu booking " + bookingId + " ✓");
 
-        // Bước 5: Gửi thông báo xác nhận
+        // Bước 6: Cập nhật trạng thái phòng
+        RoomService.updateRoomStatus(request.getRoomId(), "booked");
+
+        // Bước 7: Gửi thông báo xác nhận
         Notification notification = new Notification(
                 request.getEmail(),
                 "Đặt phòng thành công! Mã booking: " + bookingId
                         + ", Phòng: " + room.getType()
-                        + ", Check-in: " + request.getCheckInDate()
-                        + ", Check-out: " + (request.getCheckOutDate() != null ? request.getCheckOutDate() : "")
-                        + ", Số tiền: " + (long) amount + " VND",
+                        + ", Check-in: " + checkIn
+                        + ", Check-out: " + checkOut
+                        + ", Số tiền: " + (long) expectedAmount + " VND"
+                        + ", Thanh toán: " + paymentResult.getStatus(),
                 "booking_confirmation");
         NotificationService.sendNotification(notification);
 
@@ -105,5 +148,30 @@ public class BookingService {
      */
     public static List<Booking> getAllBookings() {
         return XMLUtil.readBookings();
+    }
+
+    /**
+     * Lấy chi tiết 1 booking.
+     */
+    public static Booking getBookingById(String id) {
+        return XMLUtil.readBookings().stream()
+                .filter(b -> b.getId().equalsIgnoreCase(id))
+                .findFirst()
+                .orElse(null);
+    }
+
+    private static boolean isOverlap(LocalDate newIn, LocalDate newOut, LocalDate exIn, LocalDate exOut) {
+        // Overlap nếu newIn < exOut và newOut > exIn
+        return newIn.isBefore(exOut) && newOut.isAfter(exIn);
+    }
+
+    private static LocalDate parseDateSafe(String dateStr, LocalDate fallback) {
+        try {
+            if (dateStr != null && !dateStr.isEmpty()) {
+                return LocalDate.parse(dateStr);
+            }
+        } catch (DateTimeParseException ignored) {
+        }
+        return fallback;
     }
 }

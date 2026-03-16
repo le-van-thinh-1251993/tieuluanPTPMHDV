@@ -1,0 +1,806 @@
+{
+  "info": {
+    "_postman_id": "50d7f5d7-00a9-4b0e-a5c6-d9327a081cb3",
+    "name": "PM hướng dịch vụ",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "26050743"
+  },
+  "item": [
+    {
+      "name": "Lấy danh sách phòng",
+      "item": [
+        {
+          "name": "Lấy danh sách tất cả các phòng",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8080/HotelBookingAPI/api/rooms",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "HotelBookingAPI",
+                "api",
+                "rooms"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Xem chi tiết một phòng",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8080/HotelBookingAPI/api/rooms/R01",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "HotelBookingAPI",
+                "api",
+                "rooms",
+                "R01"
+              ],
+              "query": [
+                {
+                  "key": "id",
+                  "value": "R01",
+                  "type": "text",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Xem chi tiết phòng không hợp lệ.",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8080/HotelBookingAPI/api/rooms/R0999",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "HotelBookingAPI",
+                "api",
+                "rooms",
+                "R0999"
+              ],
+              "query": [
+                {
+                  "key": "id",
+                  "value": "R01",
+                  "type": "text",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Lấy danh sách phòng lọc theo loại phòng",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8080/HotelBookingAPI/api/rooms/type/Deluxe",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "HotelBookingAPI",
+                "api",
+                "rooms",
+                "type",
+                "Deluxe"
+              ],
+              "query": [
+                {
+                  "key": "id",
+                  "value": "R01",
+                  "type": "text",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Lấy danh sách phòng lọc theo loại phòng không hợp lệ",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8080/HotelBookingAPI/api/rooms/type/Deluxe",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "HotelBookingAPI",
+                "api",
+                "rooms",
+                "type",
+                "Deluxe"
+              ],
+              "query": [
+                {
+                  "key": "id",
+                  "value": "R01",
+                  "type": "text",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Đặt phòng",
+      "item": [
+        {
+          "name": "Lấy danh sách các phòng đã đặt",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8080/HotelBookingAPI/api/bookings",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "HotelBookingAPI",
+                "api",
+                "bookings"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Đặt phòng thành công",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"customerName\": \"Nguyen Van A\",\r\n  \"email\": \"vana@gmail.com\",\r\n  \"roomId\": \"R01\",\r\n  \"checkInDate\": \"2026-04-01\",\r\n  \"checkOutDate\": \"2026-04-03\",\r\n  \"nights\": 2,\r\n  \"paymentInfo\": {\r\n   \"cardNumber\": \"12345678\",\r\n    \"amount\": 2400000\r\n  }\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/HotelBookingAPI/api/bookings",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "HotelBookingAPI",
+                "api",
+                "bookings"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Đặt trùng phòng đã đặt",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"customerName\": \"Nguyen Van A\",\r\n  \"email\": \"vana@gmail.com\",\r\n  \"roomId\": \"R01\",\r\n  \"checkInDate\": \"2026-04-01\",\r\n  \"checkOutDate\": \"2026-04-03\",\r\n  \"nights\": 2,\r\n  \"paymentInfo\": {\r\n   \"cardNumber\": \"12345678\",\r\n    \"amount\": 2400000\r\n  }\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/HotelBookingAPI/api/bookings",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "HotelBookingAPI",
+                "api",
+                "bookings"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Đặt phòng chưa thanh toán",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"customerName\": \"Nguyen Van A\",\r\n  \"email\": \"vana@gmail.com\",\r\n  \"roomId\": \"R01\",\r\n  \"checkInDate\": \"2026-04-01\",\r\n  \"checkOutDate\": \"2026-04-03\",\r\n  \"nights\": 2,\r\n  \"paymentInfo\": {\r\n   \"cardNumber\": \"12345678\",\r\n    \"amount\": 2400000\r\n  }\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/HotelBookingAPI/api/bookings",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "HotelBookingAPI",
+                "api",
+                "bookings"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Đặt phòng thanh toán luôn",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"customerName\": \"Nguyen Van A\",\r\n  \"email\": \"vana@gmail.com\",\r\n  \"roomId\": \"R01\",\r\n  \"checkInDate\": \"2026-04-01\",\r\n  \"checkOutDate\": \"2026-04-03\",\r\n  \"nights\": 2,\r\n  \"paymentInfo\": {\r\n   \"cardNumber\": \"12345678\",\r\n    \"amount\": 2400000\r\n  }\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/HotelBookingAPI/api/bookings",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "HotelBookingAPI",
+                "api",
+                "bookings"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Thanh toans",
+      "item": [
+        {
+          "name": "Thanh toán thành công",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"customerName\": \"Nguyen Van A\",\r\n  \"email\": \"vana@gmail.com\",\r\n  \"roomId\": \"R01\",\r\n  \"checkInDate\": \"2026-04-01\",\r\n  \"checkOutDate\": \"2026-04-03\",\r\n  \"nights\": 2,\r\n  \"paymentInfo\": {\r\n   \"cardNumber\": \"12345678\",\r\n    \"amount\": 2400000\r\n  }\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/HotelBookingAPI/api/bookings",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "HotelBookingAPI",
+                "api",
+                "bookings"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Thanh toán không đủ số tiền",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"customerName\": \"Nguyen Van A\",\r\n  \"email\": \"vana@gmail.com\",\r\n  \"roomId\": \"R01\",\r\n  \"checkInDate\": \"2026-04-01\",\r\n  \"checkOutDate\": \"2026-04-03\",\r\n  \"nights\": 2,\r\n  \"paymentInfo\": {\r\n   \"cardNumber\": \"12345678\",\r\n    \"amount\": 2400000\r\n  }\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/HotelBookingAPI/api/bookings",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "HotelBookingAPI",
+                "api",
+                "bookings"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Thanh toán phòng đã thanh toán",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"bookingId\": \"BK1001\",\r\n  \"amount\": 1200000,\r\n  \"cardNumber\": \"12345678\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/HotelBookingAPI/api/payments",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "HotelBookingAPI",
+                "api",
+                "payments"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Thanh toán phòng đã thanh toán phòng ở trạng thái chưa thanh toán",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"bookingId\": \"BK1001\",\r\n  \"amount\": 1200000,\r\n  \"cardNumber\": \"12345678\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/HotelBookingAPI/api/payments",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "HotelBookingAPI",
+                "api",
+                "payments"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Truyền card id không hợp lệ",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"bookingId\": \"BK1001\",\r\n  \"amount\": 1200000,\r\n  \"cardNumber\": \"12345678\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/HotelBookingAPI/api/payments",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "HotelBookingAPI",
+                "api",
+                "payments"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Để trống phòng đặt",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"bookingId\": \"BK1001\",\r\n  \"amount\": 1200000,\r\n  \"cardNumber\": \"12345678\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/HotelBookingAPI/api/payments",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "HotelBookingAPI",
+                "api",
+                "payments"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Gửi thông báo",
+      "item": [
+        {
+          "name": "Gửi thông báo đặt phòng thành công",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"email\": \"vana@gmail.com\",\r\n  \"message\": \"Đặt phòng thành công!\",\r\n  \"type\": \"booking_confirmation\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/HotelBookingAPI/api/notifications",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "HotelBookingAPI",
+                "api",
+                "notifications"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Check null",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"email\": \"vana@gmail.com\",\r\n  \"message\": \"Đặt phòng thành công!\",\r\n  \"type\": \"booking_confirmation\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/HotelBookingAPI/api/notifications",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "HotelBookingAPI",
+                "api",
+                "notifications"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Sai định dạng email",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"email\": \"vana@gmail.com\",\r\n  \"message\": \"Đặt phòng thành công!\",\r\n  \"type\": \"booking_confirmation\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/HotelBookingAPI/api/notifications",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "HotelBookingAPI",
+                "api",
+                "notifications"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Cập nhật trạng thái",
+      "item": [
+        {
+          "name": "Thay đổi trạng thái thành công",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "text/plain",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "available",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/HotelBookingAPI/api/rooms/R01/status",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "HotelBookingAPI",
+                "api",
+                "rooms",
+                "R01",
+                "status"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Phòng không tồn tại",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "text/plain",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/HotelBookingAPI/api/rooms/R01/status",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "HotelBookingAPI",
+                "api",
+                "rooms",
+                "R01",
+                "status"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Kiểm tra lại trạng thái phòng sau khi cập nhật lại trạng thái",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "text/plain",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8080/HotelBookingAPI/api/bookings",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "HotelBookingAPI",
+                "api",
+                "bookings"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

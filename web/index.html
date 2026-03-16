@@ -996,8 +996,14 @@
                         <div class="form-row">
                             <div class="form-group">
                                 <label>Số thẻ thanh toán</label>
-                                <input type="text" id="cardNumber" placeholder="12345678" required>
+                                <input type="text" id="cardNumber" placeholder="12345678" required minlength="4" maxlength="19">
                             </div>
+                            <div class="form-group">
+                                <label>Ngân hàng</label>
+                                <input type="text" id="bankName" placeholder="Vietcombank" required>
+                            </div>
+                        </div>
+                        <div class="form-row">
                             <div class="form-group">
                                 <label>Tổng tiền (VND)</label>
                                 <input type="number" id="amount" readonly>
@@ -1060,6 +1066,7 @@
     <script>
         const API_BASE = './api';
         let allRooms = [];
+        let allRoomsFull = [];
         let allBookingsForFilter = [];
         let currentDateFilter = '';
         let currentTypeFilter = 'all';
@@ -1079,11 +1086,17 @@
         // ====== ROOMS ======
         async function loadRooms() {
             try {
-                const [roomsRes, bookingsRes] = await Promise.all([
-                    fetch(API_BASE + '/rooms'),
-                    fetch(API_BASE + '/bookings')
+                const checkDate = currentDateFilter;
+                const roomsUrl = checkDate
+                    ? `${API_BASE}/rooms?checkInDate=${checkDate}&checkOutDate=${checkDate}`
+                    : `${API_BASE}/rooms`;
+                const [roomsRes, bookingsRes, allRoomsRes] = await Promise.all([
+                    fetch(roomsUrl),
+                    fetch(API_BASE + '/bookings'),
+                    fetch(API_BASE + '/rooms')
                 ]);
                 allRooms = await roomsRes.json();
+                allRoomsFull = await allRoomsRes.json();
                 allBookingsForFilter = await bookingsRes.json();
                 applyFilters();
             } catch (e) {
@@ -1127,11 +1140,12 @@
 
         function renderStats(rooms, bookedRoomIds) {
             bookedRoomIds = bookedRoomIds || [];
-            const total = rooms.length;
+            const baseRooms = allRoomsFull.length ? allRoomsFull : rooms;
+            const total = baseRooms.length;
             const bookedCount = bookedRoomIds.length;
-            const availableCount = total - bookedCount;
-            const avgPrice = rooms.length > 0
-                ? Math.round(rooms.reduce((s, r) => s + r.price, 0) / rooms.length)
+            const availableCount = Math.max(0, total - bookedCount);
+            const avgPrice = baseRooms.length > 0
+                ? Math.round(baseRooms.reduce((s, r) => s + r.price, 0) / baseRooms.length)
                 : 0;
 
             document.getElementById('room-stats').innerHTML = `
@@ -1164,14 +1178,14 @@
         // ====== DATE FILTER ======
         function filterByDate() {
             currentDateFilter = document.getElementById('filterDate').value;
-            applyFilters();
+            loadRooms();
         }
 
         function clearDateFilter() {
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('filterDate').value = today;
             currentDateFilter = today;
-            applyFilters();
+            loadRooms();
         }
 
         function applyFilters() {
@@ -1265,9 +1279,27 @@
                 nights: nights,
                 paymentInfo: {
                     cardNumber: document.getElementById('cardNumber').value,
+                    bankName: document.getElementById('bankName').value,
                     amount: parseFloat(document.getElementById('amount').value)
                 }
             };
+
+            if (!body.roomId) {
+                showModal('error', 'Thiếu thông tin', '<p>Vui lòng chọn phòng.</p>');
+                btn.disabled = false; btn.textContent = 'Xác nhận đặt phòng'; return;
+            }
+            if (!body.paymentInfo.amount || body.paymentInfo.amount <= 0) {
+                showModal('error', 'Số tiền không hợp lệ', '<p>Kiểm tra lại số đêm hoặc giá phòng.</p>');
+                btn.disabled = false; btn.textContent = 'Xác nhận đặt phòng'; return;
+            }
+            if (!body.paymentInfo.cardNumber || body.paymentInfo.cardNumber.length < 4) {
+                showModal('error', 'Số thẻ không hợp lệ', '<p>Số thẻ tối thiểu 4 ký tự.</p>');
+                btn.disabled = false; btn.textContent = 'Xác nhận đặt phòng'; return;
+            }
+            if (!body.paymentInfo.bankName) {
+                showModal('error', 'Thiếu ngân hàng', '<p>Vui lòng nhập tên ngân hàng.</p>');
+                btn.disabled = false; btn.textContent = 'Xác nhận đặt phòng'; return;
+            }
 
             try {
                 const res = await fetch(API_BASE + '/bookings', {
@@ -1353,6 +1385,9 @@
                             <th>Phòng</th>
                             <th>Check-in</th>
                             <th>Số tiền</th>
+                            <th>Đã thanh toán</th>
+                            <th>TT thanh toán</th>
+                            <th>Ngân hàng</th>
                             <th>Trạng thái</th>
                         </tr>
                     </thead>
@@ -1365,6 +1400,9 @@
                                 <td>${b.roomId}</td>
                                 <td>${b.checkInDate}</td>
                                 <td><strong>${formatPrice(b.amount)}</strong> VND</td>
+                                <td>${formatPrice(b.paidAmount || b.amount)} VND</td>
+                                <td><span class="status-badge status-${b.paymentStatus || 'unknown'}">${b.paymentStatus || 'unknown'}</span></td>
+                                <td>${b.bankName || ''}</td>
                                 <td><span class="status-badge status-${b.status}">${b.status}</span></td>
                             </tr>
                         `).join('')}
@@ -1411,7 +1449,11 @@
                             </div>
                             <div class="invoice-row">
                                 <span class="invoice-label">💳 Thanh toán</span>
-                                <span class="invoice-value" style="color:var(--success);">✅ Đã thanh toán</span>
+                                <span class="invoice-value" style="color:${b.paymentStatus === 'success' ? 'var(--success)' : 'var(--danger)'};">${b.paymentStatus || 'unknown'}</span>
+                            </div>
+                            <div class="invoice-row">
+                                <span class="invoice-label">🏦 Ngân hàng</span>
+                                <span class="invoice-value">${b.bankName || ''}</span>
                             </div>
                             ${room.price ? `<div class="invoice-row">
                                 <span class="invoice-label">💲 Giá phòng/đêm</span>
@@ -1420,7 +1462,7 @@
                         </div>
                         <div class="invoice-total">
                             <span class="label">💰 Tổng hóa đơn</span>
-                            <span class="amount">${formatPrice(b.amount)} VND</span>
+                            <span class="amount">${formatPrice(b.paidAmount || b.amount)} VND</span>
                         </div>
                     </div>
                 `;

@@ -11,12 +11,16 @@ public class Booking {
     private int nights;
     private double amount;
     private String status;
+    private String paymentStatus;
+    private double paidAmount;
+    private String bankName;
 
     public Booking() {
     }
 
     public Booking(String id, String customerName, String email, String roomId,
-            String checkInDate, String checkOutDate, int nights, double amount, String status) {
+            String checkInDate, String checkOutDate, int nights, double amount, String status,
+            String paymentStatus, double paidAmount, String bankName) {
         this.id = id;
         this.customerName = customerName;
         this.email = email;
@@ -26,6 +30,16 @@ public class Booking {
         this.nights = nights;
         this.amount = amount;
         this.status = status;
+        this.paymentStatus = paymentStatus;
+        this.paidAmount = paidAmount;
+        this.bankName = bankName;
+    }
+
+    // Backward compatibility constructor when payment info is not passed
+    public Booking(String id, String customerName, String email, String roomId,
+            String checkInDate, String checkOutDate, int nights, double amount, String status) {
+        this(id, customerName, email, roomId, checkInDate, checkOutDate, nights, amount,
+                status, "unknown", amount, "");
     }
 
     public String getId() {
@@ -98,5 +112,29 @@ public class Booking {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public String getPaymentStatus() {
+        return paymentStatus;
+    }
+
+    public void setPaymentStatus(String paymentStatus) {
+        this.paymentStatus = paymentStatus;
+    }
+
+    public double getPaidAmount() {
+        return paidAmount;
+    }
+
+    public void setPaidAmount(double paidAmount) {
+        this.paidAmount = paidAmount;
+    }
+
+    public String getBankName() {
+        return bankName;
+    }
+
+    public void setBankName(String bankName) {
+        this.bankName = bankName;
     }
 }

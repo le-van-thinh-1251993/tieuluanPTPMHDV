@@ -20,7 +20,11 @@ public class RoomResource {
      */
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public List<Room> getRooms() {
+    public List<Room> getRooms(@QueryParam("checkInDate") String checkInDate,
+            @QueryParam("checkOutDate") String checkOutDate) {
+        if (checkInDate != null && !checkInDate.trim().isEmpty()) {
+            return RoomService.getAvailableRooms(checkInDate, checkOutDate);
+        }
         return RoomService.getAllRooms();
     }
 
@@ -69,9 +73,15 @@ public class RoomResource {
                     .build();
         }
 
-        RoomService.updateRoomStatus(id, status);
-        return Response.ok()
-                .entity("{\"message\": \"Đã cập nhật trạng thái phòng " + id + " thành " + status + "\"}")
-                .build();
+        try {
+            RoomService.updateRoomStatus(id, status);
+            return Response.ok()
+                    .entity("{\"message\": \"Đã cập nhật trạng thái phòng " + id + " thành " + status + "\"}")
+                    .build();
+        } catch (IllegalArgumentException ex) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("{\"error\": \"" + ex.getMessage() + "\"}")
+                    .build();
+        }
     }
 }

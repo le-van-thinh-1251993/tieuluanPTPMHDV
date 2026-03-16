@@ -123,6 +123,12 @@ public class XMLUtil {
 
                     String checkOutStr = getTagValue("checkOutDate", element);
                     String nightsStr = getTagValue("nights", element);
+                    String paymentStatus = getTagValue("paymentStatus", element);
+                    String paidAmountStr = getTagValue("paidAmount", element);
+                    String bankName = getTagValue("bankName", element);
+                    double amount = Double.parseDouble(getTagValue("amount", element));
+                    double paidAmount = (paidAmountStr != null && !paidAmountStr.isEmpty())
+                            ? Double.parseDouble(paidAmountStr) : amount;
                     Booking booking = new Booking(
                             getTagValue("id", element),
                             getTagValue("customerName", element),
@@ -131,8 +137,11 @@ public class XMLUtil {
                             getTagValue("checkInDate", element),
                             checkOutStr != null && !checkOutStr.isEmpty() ? checkOutStr : "",
                             nightsStr != null && !nightsStr.isEmpty() ? Integer.parseInt(nightsStr) : 1,
-                            Double.parseDouble(getTagValue("amount", element)),
-                            getTagValue("status", element));
+                            amount,
+                            getTagValue("status", element),
+                            paymentStatus != null && !paymentStatus.isEmpty() ? paymentStatus : "unknown",
+                            paidAmount,
+                            bankName != null ? bankName : "");
                     bookings.add(booking);
                 }
             }
@@ -172,6 +181,11 @@ public class XMLUtil {
                 bookingElement.appendChild(createElement(doc, "nights", String.valueOf(b.getNights())));
                 bookingElement.appendChild(createElement(doc, "amount", String.valueOf((long) b.getAmount())));
                 bookingElement.appendChild(createElement(doc, "status", b.getStatus()));
+                bookingElement.appendChild(createElement(doc, "paymentStatus",
+                        b.getPaymentStatus() != null ? b.getPaymentStatus() : ""));
+                bookingElement.appendChild(createElement(doc, "paidAmount", String.valueOf((long) b.getPaidAmount())));
+                bookingElement.appendChild(createElement(doc, "bankName",
+                        b.getBankName() != null ? b.getBankName() : ""));
 
                 rootElement.appendChild(bookingElement);
             }
