@@ -69,7 +69,7 @@ public class RoomService {
                 out = in.plusDays(1);
             }
         } catch (DateTimeParseException ex) {
-            return allRooms; // nếu ngày sai định dạng thì trả về toàn bộ để client tự xử lý
+            return new ArrayList<>(); // return empty list if date format is invalid, since it's required now
         }
 
         for (Room room : allRooms) {

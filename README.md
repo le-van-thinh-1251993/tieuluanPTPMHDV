@@ -166,12 +166,12 @@ HotelBookingAPI/
 
 | Method | URL | Mô tả |
 |--------|-----|--------|
-| `GET` | `/api/rooms` | Lấy danh sách tất cả phòng |
-| `GET` | `/api/rooms/{id}` | Xem chi tiết 1 phòng |
+| `GET` | `/api/rooms?checkInDate={date}` | Lấy danh sách phòng trống theo ngày |
+| `GET` | `/api/rooms/{id}` | Xem chi tiết 1 phòng (kèm trạng thái thanh toán) |
 | `GET` | `/api/rooms/type/{type}` | Lọc phòng theo loại |
 | `PUT` | `/api/rooms/{id}/status` | Cập nhật trạng thái phòng |
-| `POST` | `/api/bookings` | Tạo đặt phòng mới |
-| `GET` | `/api/bookings` | Xem danh sách booking |
+| `POST` | `/api/bookings` | Tạo đặt phòng mới (Kèm Data Thanh Toán) |
+| `GET` | `/api/bookings` | Xem danh sách booking (Hỗ trợ lọc: `checkInDate`, `checkOutDate`,...) |
 | `POST` | `/api/payments` | Xử lý thanh toán |
 | `POST` | `/api/notifications` | Gửi thông báo |
 
@@ -189,12 +189,12 @@ HotelBookingAPI/
 
 | # | Test | Method | URL | Kết quả mong đợi |
 |---|------|--------|-----|-------------------|
-| 1 | Danh sách phòng | `GET` | `/api/rooms` | 200 - 5 phòng |
+| 1 | Danh sách phòng | `GET` | `/api/rooms?checkInDate=2026-03-26` | 200 - Trả về phòng trống |
 | 2 | Chi tiết phòng | `GET` | `/api/rooms/R01` | 200 - Thông tin R01 |
 | 3 | Lọc theo loại | `GET` | `/api/rooms/type/Deluxe` | 200 - Phòng Deluxe |
-| **4** | **⭐ Đặt phòng** | **`POST`** | **`/api/bookings`** | **201 - confirmed** |
+| **4** | **⭐ Đặt phòng** | **`POST`** | **`/api/bookings`** | **201 - kèm thông tin thanh toán (paymentInfo)** |
 | 5 | Đặt trùng ngày | `POST` | `/api/bookings` | 400 - Phòng đã được đặt trong khoảng ngày |
-| 6 | Danh sách booking | `GET` | `/api/bookings` | 200 - Danh sách bookings |
+| 6 | Danh sách booking | `GET` | `/api/bookings` | 200 - Danh sách bookings có paymentStatus |
 | 7 | Thanh toán | `POST` | `/api/payments` | 200 - status: `success` |
 | 8 | Gửi thông báo | `POST` | `/api/notifications` | 200 - Gửi thành công |
 | 9 | Cập nhật trạng thái | `PUT` | `/api/rooms/R01/status` | 200 - Đã cập nhật |

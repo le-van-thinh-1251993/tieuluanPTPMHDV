@@ -996,7 +996,8 @@
                         <div class="form-row">
                             <div class="form-group">
                                 <label>Số thẻ thanh toán</label>
-                                <input type="text" id="cardNumber" placeholder="12345678" required minlength="4" maxlength="19">
+                                <input type="text" id="cardNumber" placeholder="12345678" required minlength="4"
+                                    maxlength="19">
                             </div>
                             <div class="form-group">
                                 <label>Ngân hàng</label>
@@ -1217,14 +1218,21 @@
             document.querySelectorAll('.nav-tab')[1].classList.add('active');
 
             loadRoomOptions().then(() => {
-                document.getElementById('roomId').value = roomId;
-                updatePrice();
+                // Pre-select the room if roomId is provided
+                if (roomId) {
+                    document.getElementById('roomId').value = roomId;
+                }
+                updatePrice(); // Update price after setting room
             });
         }
 
         async function loadRoomOptions() {
             try {
-                const res = await fetch(API_BASE + '/rooms');
+                let checkIn = document.getElementById('checkInDate').value;
+                if (!checkIn) {
+                    checkIn = new Date().toISOString().split('T')[0];
+                }
+                const res = await fetch(API_BASE + '/rooms?checkInDate=' + checkIn);
                 const rooms = await res.json();
                 const select = document.getElementById('roomId');
                 const currentVal = select.value;
@@ -1355,9 +1363,13 @@
 
         async function loadBookings() {
             try {
+                let checkIn = document.getElementById('checkInDate') ? document.getElementById('checkInDate').value : '';
+                if (!checkIn) {
+                    checkIn = new Date().toISOString().split('T')[0];
+                }
                 const [bookingsRes, roomsRes] = await Promise.all([
                     fetch(API_BASE + '/bookings'),
-                    fetch(API_BASE + '/rooms')
+                    fetch(API_BASE + '/rooms?checkInDate=' + checkIn)
                 ]);
                 allBookings = await bookingsRes.json();
                 const rooms = await roomsRes.json();

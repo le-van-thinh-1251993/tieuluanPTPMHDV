@@ -1,6 +1,5 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <bookings>
-
     <booking>
         <id>BK1001</id>
         <customerName>Lê Văn Thịnh</customerName>
@@ -15,7 +14,6 @@
         <paidAmount>2400000</paidAmount>
         <bankName>VCB</bankName>
     </booking>
-
     <booking>
         <id>BK1002</id>
         <customerName>Nguyễn Thị Vinh</customerName>
@@ -30,7 +28,6 @@
         <paidAmount>2400000</paidAmount>
         <bankName>ACB</bankName>
     </booking>
-
     <booking>
         <id>BK1003</id>
         <customerName>Nguyễn Thị Ngọc Anh</customerName>
@@ -45,7 +42,6 @@
         <paidAmount>2500000</paidAmount>
         <bankName>VietinBank</bankName>
     </booking>
-
     <booking>
         <id>BK1004</id>
         <customerName>Nguyễn Thị Hoan</customerName>
@@ -60,7 +56,6 @@
         <paidAmount>6000000</paidAmount>
         <bankName>Techcombank</bankName>
     </booking>
-
     <booking>
         <id>BK1005</id>
         <customerName>Nguyễn Thị Tuyết</customerName>
@@ -75,5 +70,60 @@
         <paidAmount>3000000</paidAmount>
         <bankName>MB</bankName>
     </booking>
-
+    <booking>
+        <id>BK1006</id>
+        <customerName>thịnh</customerName>
+        <email>thinh1251993@gmail.com</email>
+        <roomId>R04</roomId>
+        <checkInDate>2026-03-17</checkInDate>
+        <checkOutDate>2026-03-20</checkOutDate>
+        <nights>3</nights>
+        <amount>9000000</amount>
+        <status>confirmed</status>
+        <paymentStatus>success</paymentStatus>
+        <paidAmount>9000000</paidAmount>
+        <bankName>MB</bankName>
+    </booking>
+    <booking>
+        <id>BK1007</id>
+        <customerName>Live Test User</customerName>
+        <email>live@test.com</email>
+        <roomId>R02</roomId>
+        <checkInDate>2026-05-01</checkInDate>
+        <checkOutDate>2026-05-03</checkOutDate>
+        <nights>2</nights>
+        <amount>1600000</amount>
+        <status>confirmed</status>
+        <paymentStatus>success</paymentStatus>
+        <paidAmount>1600000</paidAmount>
+        <bankName>TESTBANK</bankName>
+    </booking>
+    <booking>
+        <id>BK1008</id>
+        <customerName>test</customerName>
+        <email>1@gmail.com</email>
+        <roomId>R01</roomId>
+        <checkInDate>2026-03-17</checkInDate>
+        <checkOutDate>2026-03-18</checkOutDate>
+        <nights>1</nights>
+        <amount>1200000</amount>
+        <status>confirmed</status>
+        <paymentStatus>success</paymentStatus>
+        <paidAmount>1200000</paidAmount>
+        <bankName>MB</bankName>
+    </booking>
+    <booking>
+        <id>BK1009</id>
+        <customerName>Nguyen Van A</customerName>
+        <email>vana@gmail.com</email>
+        <roomId>R01</roomId>
+        <checkInDate>2026-04-01</checkInDate>
+        <checkOutDate>2026-04-03</checkOutDate>
+        <nights>2</nights>
+        <amount>2400000</amount>
+        <status>confirmed</status>
+        <paymentStatus>success</paymentStatus>
+        <paidAmount>2400000</paidAmount>
+        <bankName>MB</bankName>
+    </booking>
 </bookings>

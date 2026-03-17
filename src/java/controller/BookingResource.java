@@ -60,11 +60,17 @@ public class BookingResource {
     /**
      * Lấy danh sách tất cả bookings.
      * GET /api/bookings
+     * Hỗ trợ bộ lọc: checkInDate, checkOutDate, customerName, roomId, status.
      */
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public List<Booking> getAllBookings() {
-        return BookingService.getAllBookings();
+    public List<Booking> getAllBookings(
+            @QueryParam("checkInDate") String checkInDate,
+            @QueryParam("checkOutDate") String checkOutDate,
+            @QueryParam("customerName") String customerName,
+            @QueryParam("roomId") String roomId,
+            @QueryParam("status") String status) {
+        return BookingService.getAllBookings(checkInDate, checkOutDate, customerName, roomId, status);
     }
 
     /**

@@ -123,9 +123,9 @@ public class BookingService {
         XMLUtil.writeBooking(booking);
         System.out.println("[BookingService] Đã lưu booking " + bookingId + " ✓");
 
-        // Bước 6: Cập nhật trạng thái phòng
-        RoomService.updateRoomStatus(request.getRoomId(), "booked");
-
+        // Bước 6: Không cập nhật trạng thái phòng thành "booked" nữa để giữ trạng thái gốc là "available",
+        // việc kiểm tra trống phòng sẽ dựa trên ngày trong bookings.xml
+        
         // Bước 7: Gửi thông báo xác nhận
         Notification notification = new Notification(
                 request.getEmail(),
@@ -144,10 +144,17 @@ public class BookingService {
     }
 
     /**
-     * Lấy danh sách tất cả bookings.
+     * Lấy danh sách tất cả bookings theo các bộ lọc, dùng cho chức năng Check-in.
      */
-    public static List<Booking> getAllBookings() {
-        return XMLUtil.readBookings();
+    public static List<Booking> getAllBookings(String checkInDate, String checkOutDate, String customerName, String roomId, String status) {
+        List<Booking> all = XMLUtil.readBookings();
+        return all.stream()
+                .filter(b -> checkInDate == null || checkInDate.trim().isEmpty() || b.getCheckInDate().equals(checkInDate))
+                .filter(b -> checkOutDate == null || checkOutDate.trim().isEmpty() || b.getCheckOutDate().equals(checkOutDate))
+                .filter(b -> customerName == null || customerName.trim().isEmpty() || b.getCustomerName().toLowerCase().contains(customerName.trim().toLowerCase()))
+                .filter(b -> roomId == null || roomId.trim().isEmpty() || b.getRoomId().equalsIgnoreCase(roomId.trim()))
+                .filter(b -> status == null || status.trim().isEmpty() || b.getStatus().equalsIgnoreCase(status.trim()))
+                .collect(java.util.stream.Collectors.toList());
     }
 
     /**

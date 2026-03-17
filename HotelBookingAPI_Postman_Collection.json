@@ -1,0 +1,254 @@
+﻿{
+	"info": {
+		"_postman_id": "a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d",
+		"name": "HotelBookingAPI",
+		"description": "API requests for Hotel Booking System (Tiểu luận PTPM Hướng dịch vụ)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Rooms",
+			"item": [
+				{
+					"name": "Get All Rooms",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/HotelBookingAPI/api/rooms",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"HotelBookingAPI",
+								"api",
+								"rooms"
+							],
+							"query": [
+								{
+									"key": "checkInDate",
+									"value": "2026-03-26"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Room By ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/HotelBookingAPI/api/rooms/R01",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"HotelBookingAPI",
+								"api",
+								"rooms",
+								"R01"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Rooms By Type",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/HotelBookingAPI/api/rooms/type/Deluxe",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"HotelBookingAPI",
+								"api",
+								"rooms",
+								"type",
+								"Deluxe"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Room Status",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "text/plain",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "available"
+						},
+						"url": {
+							"raw": "http://localhost:8080/HotelBookingAPI/api/rooms/R01/status",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"HotelBookingAPI",
+								"api",
+								"rooms",
+								"R01",
+								"status"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Bookings",
+			"item": [
+				{
+					"name": "Get All Bookings",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/HotelBookingAPI/api/bookings?checkInDate=2026-03-26&checkOutDate=2026-03-27",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"HotelBookingAPI",
+								"api",
+								"bookings"
+							],
+							"query": [
+								{
+									"key": "checkInDate",
+									"value": "2026-03-26"
+								},
+								{
+									"key": "checkOutDate",
+									"value": "2026-03-27"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Booking",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"customerName\": \"Nguyen Van A\",\n  \"email\": \"vana@gmail.com\",\n  \"roomId\": \"R01\",\n  \"checkInDate\": \"2026-04-01\",\n  \"checkOutDate\": \"2026-04-03\",\n  \"nights\": 2,\n  \"paymentInfo\": {\n    \"cardNumber\": \"12345678\",\n    \"bankName\": \"MB\",\n    \"amount\": 2400000\n  }\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8080/HotelBookingAPI/api/bookings",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"HotelBookingAPI",
+								"api",
+								"bookings"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Payments & Notifications",
+			"item": [
+				{
+					"name": "Process Payment",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"bookingId\": \"BK1001\",\n  \"amount\": 1200000,\n  \"cardNumber\": \"12345678\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8080/HotelBookingAPI/api/payments",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"HotelBookingAPI",
+								"api",
+								"payments"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Send Notification",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"vana@gmail.com\",\n  \"message\": \"Đặt phòng thành công!\",\n  \"type\": \"booking_confirmation\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8080/HotelBookingAPI/api/notifications",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"HotelBookingAPI",
+								"api",
+								"notifications"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}

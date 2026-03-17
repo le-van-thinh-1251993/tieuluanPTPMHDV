@@ -6,6 +6,7 @@ import javax.ws.rs.core.Response;
 import java.util.List;
 import model.Room;
 import service.RoomService;
+import util.XMLUtil;
 
 /**
  * REST Resource cho Room Service.
@@ -20,18 +21,16 @@ public class RoomResource {
      */
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public List<Room> getRooms(@QueryParam("checkInDate") String checkInDate,
+    public Response getRooms(@QueryParam("checkInDate") String checkInDate,
             @QueryParam("checkOutDate") String checkOutDate) {
-        if (checkInDate != null && !checkInDate.trim().isEmpty()) {
-            return RoomService.getAvailableRooms(checkInDate, checkOutDate);
+        if (checkInDate == null || checkInDate.trim().isEmpty()) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("{\"error\": \"Tham số checkInDate là bắt buộc\"}")
+                    .build();
         }
-        return RoomService.getAllRooms();
+        List<Room> rooms = RoomService.getAvailableRooms(checkInDate, checkOutDate);
+        return Response.ok(rooms).build();
     }
-
-    /**
-     * Xem chi tiết 1 phòng theo ID.
-     * GET /api/rooms/{id}
-     */
     @GET
     @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -42,7 +41,23 @@ public class RoomResource {
                     .entity("{\"error\": \"Không tìm thấy phòng " + id + "\"}")
                     .build();
         }
-        return Response.ok(room).build();
+        
+        // Enhance response with payment status from the latest confirmed booking
+        String paymentStatus = "none";
+        java.util.List<model.Booking> allBookings = XMLUtil.readBookings();
+        for (model.Booking b : allBookings) {
+            if (b.getRoomId().equalsIgnoreCase(id) && "confirmed".equalsIgnoreCase(b.getStatus())) {
+                paymentStatus = b.getPaymentStatus();
+            }
+        }
+        
+        // Return a customized JSON including payment status
+        String jsonResponse = String.format(
+            "{\"id\":\"%s\", \"type\":\"%s\", \"price\":%d, \"status\":\"%s\", \"paymentStatus\":\"%s\"}",
+            room.getId(), room.getType(), (long)room.getPrice(), room.getStatus(), paymentStatus
+        );
+        
+        return Response.ok(jsonResponse).build();
     }
 
     /**

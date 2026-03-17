@@ -32,11 +32,13 @@ public class XMLUtil {
     public static List<Room> readRooms() {
         List<Room> rooms = new ArrayList<>();
         try {
-            InputStream is = XMLUtil.class.getClassLoader().getResourceAsStream("data/rooms.xml");
-            if (is == null) {
+            java.net.URL url = XMLUtil.class.getClassLoader().getResource("data/rooms.xml");
+            if (url == null) {
                 System.out.println("[XMLUtil] Không tìm thấy file rooms.xml");
                 return rooms;
             }
+            java.io.File file = new java.io.File(url.toURI());
+            InputStream is = new java.io.FileInputStream(file);
 
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             DocumentBuilder builder = factory.newDocumentBuilder();
@@ -103,11 +105,13 @@ public class XMLUtil {
     public static List<Booking> readBookings() {
         List<Booking> bookings = new ArrayList<>();
         try {
-            InputStream is = XMLUtil.class.getClassLoader().getResourceAsStream("data/bookings.xml");
-            if (is == null) {
+            java.net.URL url = XMLUtil.class.getClassLoader().getResource("data/bookings.xml");
+            if (url == null) {
                 System.out.println("[XMLUtil] Không tìm thấy file bookings.xml");
                 return bookings;
             }
+            java.io.File file = new java.io.File(url.toURI());
+            InputStream is = new java.io.FileInputStream(file);
 
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             DocumentBuilder builder = factory.newDocumentBuilder();
@@ -235,13 +239,26 @@ public class XMLUtil {
 
         DOMSource source = new DOMSource(doc);
 
-        // Tìm đường dẫn file thực tế của resource
+        // Tìm đường dẫn file thực tế của resource (trong thư mục build/deploy)
         URL url = XMLUtil.class.getClassLoader().getResource(resourcePath);
         if (url != null) {
             File file = new File(url.toURI());
             StreamResult result = new StreamResult(file);
             transformer.transform(source, result);
-            System.out.println("[XMLUtil] Đã ghi dữ liệu vào: " + file.getAbsolutePath());
+            System.out.println("[XMLUtil] Đã ghi dữ liệu vào build: " + file.getAbsolutePath());
+            
+            // Ghi đè ngược lại vào thư mục src để không mất dữ liệu sau khi clean and build
+            try {
+                String srcPath = file.getAbsolutePath().replace("\\build\\web\\WEB-INF\\classes\\", "\\src\\java\\");
+                File srcFile = new File(srcPath);
+                if (srcFile.exists()) {
+                    StreamResult srcResult = new StreamResult(srcFile);
+                    transformer.transform(source, srcResult);
+                    System.out.println("[XMLUtil] Đã ghi dữ liệu vào src: " + srcFile.getAbsolutePath());
+                }
+            } catch (Exception ex) {
+                System.out.println("[XMLUtil] Lỗi ghi file src: " + ex.getMessage());
+            }
         } else {
             System.out.println("[XMLUtil] Không tìm thấy file: " + resourcePath);
         }
